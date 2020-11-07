@@ -1,0 +1,319 @@
+<html>
+    <head>
+        <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+        <style>
+            #visit {
+                max-width: 900px;
+            }
+            [class*="col-"] {
+                padding-left: 0 !important;
+                padding-right: 0 !important;
+            }
+            table {
+                width: 1200px !important;
+                table-layout: fixed;
+            }
+            td {
+                padding-top: 10px;
+                padding-bottom:10px;
+                word-wrap:break-word;
+            }
+        </style>
+        <script>
+            $(document).ready(function() {
+                var current
+                $('#locations').hide()
+                var today=new Date();
+                $('#date_from').val(today.toISOString().substr(0, 10))
+                $('#date_to').val(today.toISOString().substr(0, 10))
+                function renderLocations(database, data) {
+                    $('#locations tbody').empty()
+                    if(database=='hotzone') {
+                        data.forEach((ele, idx, arr) => {
+                            $('#locations tbody').append(
+                                `<tr class="mb-2">
+                                <td colspan=4>${ele.fields.name}</td>
+                                <td colspan=10>${ele.fields.address}</td>
+                                <td colspan=2>${ele.fields.x}</td>
+                                <td colspan=2>${ele.fields.y}</td>
+                                <td colspan=2><button type="button" class="${database}" data-pk="${ele.pk}" data-idx="${idx}">Select</button></td>
+                                </tr>`)
+                        })
+                    }
+                    else {
+                        data.forEach((ele, idx, arr) => {
+                            $('#locations tbody').append(
+                                `<tr class="mb-2">
+                                <td colspan=4>${ele.nameEN}</td>
+                                <td colspan=10>${ele.addressEN}</td>
+                                <td colspan=2>${ele.x}</td>
+                                <td colspan=2>${ele.y}</td>
+                                <td colspan=2><button type="button" class="${database}" data-idx="${idx}">Add &amp; Select</button></td>
+                                </tr>`)
+                        })
+                    }
+                    $('#locations').show()
+                }
+                function reset() {
+                    $("#x_coord").html('')
+                    $("#y_coord").html('')
+                    $("#address").html('')
+                }
+                function set(data, from) {
+                    if(from=='hotzone') {
+                        $("#x_coord").html(data.fields.x)
+                        $("#y_coord").html(data.fields.y)
+                        $("#address").html(data.fields.address)
+                        $("#location").val(data.fields.name)
+                        $("#visit").attr('data-pk', data.pk)
+                    }
+                    else {
+                        $("#x_coord").html(data.x)
+                        $("#y_coord").html(data.y)
+                        $("#address").html(data.addressEN)
+                        $("#location").val(data.nameEN)
+                        $("#visit").attr('data-pk', data.pk)
+                    }
+                }
+                $(document).on('click','.hotzone',function() {
+                    set(current[parseInt($(this).attr('data-idx'))], 'hotzone')
+                })
+                $(document).on('click','.geodata',function() {
+                    idx=parseInt($(this).attr('data-idx'))
+                    obj={
+                        name: current[idx].nameEN,
+                        address: current[idx].addressEN,
+                        x: parseFloat(current[idx].x),
+                        y: parseFloat(current[idx].y),
+                        csrfmiddlewaretoken: '{{ csrf_token }}'
+                    }
+                    $.post('{% url "add-location" %}', obj, function(data) {
+                        $('#visit').attr('data-pk',data.pk)
+                        set(current[idx], 'geodata')
+                        if(data.status==1) {
+                            alert("Location added to HotZone.")
+                        }
+                        else {
+                            alert("Location in HotZone already.")
+                        }
+                    }, 'json')
+                })
+                $('#addVisit').click(function() {
+                    if($('#case_id').val()=='' || $('#x_coord').html()=='') {
+                        alert('Please input complete data.')
+                        return
+                    }
+                    obj={
+                        case_id: $("#case_id").val(),
+                        location_id: $('#visit').attr('data-pk'),
+                        category: $('#category option:selected').attr('value'),
+                        date_from: $('#date_from').val(),
+                        date_to: $('#date_to').val(),
+                        csrfmiddlewaretoken: '{{ csrf_token }}'
+                    }
+                    $.post('{% url "add" %}', obj, function(data) {
+                        alert(data.msg)
+                    }, 'json')
+                })
+                $('#searchHotzone').click(function() {
+                    if($("#location").val()!='') {
+                        $.get('{% url "get-locations" %}',{name: $("#location").val()}, function(data) {
+                            current=data
+                            if(data.length==1) {
+                                set(data[0], 'hotzone')
+                                $('#locations').hide()
+                            }
+                            else if(data.length>1) {
+                                reset()
+                                renderLocations('hotzone', data)
+                            }
+                            else {
+                                reset()
+                                $('#locations').hide()
+                                alert("No record in HotZone.")
+                            }
+                        },'json')
+                    }
+                    else {
+                        $.get('{% url "get-locations" %}',{name: ''}, function(data) {
+                            current=data
+                            if(data.length>=1) {
+                                reset()
+                                renderLocations('hotzone', data)
+                            }
+                            else {
+                                reset()
+                                $('#locations').hide()
+                                alert("No record in HotZone.")
+                            }
+                        },'json')
+                    }
+                })
+                $('#searchGeoData').click(function() {
+                    if($("#location").val()!='') {
+                        $.ajax({
+                            url: 'https://geodata.gov.hk/gs/api/v1.0.0/locationSearch',
+                            type: 'GET',
+                            data: {q: $("#location").val()},
+                            success: function(data) { 
+                                current=data
+                                if(data.length>=1) {
+                                    reset()
+                                    renderLocations('geodata', data)
+                                }
+                                else {
+                                    reset()
+                                    $('#locations').hide()
+                                    alert("No record in GeoData Store.")
+                                }
+                            },
+                            error: function(data) {
+                                reset()
+                                $('#locations').hide()
+                                alert("No record in GeoData Store.")
+                            }
+                        })
+                    }
+                    else {
+                        reset()
+                        $('#locations').hide()
+                    }
+                })
+            })
+        </script>
+    </head>
+    <body>
+        <form class="container-fluid mt-4" id="visit" data-pk=''>
+            <div class="row">
+                <div class="col-6">
+                    <div class="row">
+                        <div class='col-3'>
+                            <label for='case_id'>Case number</label>
+                        </div>
+                        <div class='col-8'>
+                            <input type='text' id='case_id'/>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="row">
+                        <div class='col-3'>
+                            <label for='date_from'>Date from</label>
+                        </div>
+                        <div class='col-8'>
+                            <input type='date' id='date_from'/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-4">
+                <div class="col-6">
+                    <div class="row">
+                        <div class='col-3'>
+                            <label for='category'>Category</label>
+                        </div>
+                        <div class='col-8'>
+                            <select id='category'>
+                                <option value='r'>Residence</option>
+                                <option value='w'>Workplace</option>
+                                <option value='v'>Visit</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="row">
+                        <div class='col-3'>
+                            <label for='date_to'>Date to</label>
+                        </div>
+                        <div class='col-8'>
+                            <input type='date' id='date_to'/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-4">
+                <div class="col-6">
+                    <div class="row">
+                        <div class='col-3'>
+                            <label for='location'>Location</label>
+                        </div>
+                        <div class='col-8'>
+                            <input type='text' id='location'/>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="row">
+                        <div class='col-3'>
+                            X Coord
+                        </div>
+                        <div class='col-8'>
+                            <span id="x_coord"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-4">
+                <div class="col-6">
+                    <div class="row">
+                        <div class='col-3'>
+                            Address
+                        </div>
+                        <div class='col-8'>
+                            <span id='address'></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="row">
+                        <div class='col-3'>
+                            Y Coord
+                        </div>
+                        <div class='col-8'>
+                            <span id="y_coord"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-4">
+                <div class="col-4">
+                    <button type="button" class='col-10' id='searchHotzone'>Search HotZone</button>
+                </div>
+                <div class="col-4">
+                    <button type="button" id='searchGeoData' class='col-10'>Search GeoData Store</button>
+                </div>
+                <div class="col-4">
+                    <button type='button' id='addVisit' class='col-10'>Add Visit Record</button>
+                </div>
+            </div>
+        </form>
+        <div class='mt-4 container-fluid'>
+            <table class='container-fluid' id="locations">
+                <colgroup>
+                    <col width="5%"><col width="5%">
+                    <col width="5%"><col width="5%">
+                    <col width="5%"><col width="5%">
+                    <col width="5%"><col width="5%">
+                    <col width="5%"><col width="5%">
+                    <col width="5%"><col width="5%">
+                    <col width="5%"><col width="5%">
+                    <col width="5%"><col width="5%">
+                    <col width="5%"><col width="5%">
+                    <col width="5%"><col width="5%">
+                </colgroup>
+                <thead>
+                    <th colspan=4>Name</th>
+                    <th colspan=10>Address</th>
+                    <th colspan=2>X coord</th>
+                    <th colspan=2>Y coord</th>
+                    <th colspan=2></th>
+                </thead>
+                <tbody></tbody>
+            </ul>
+        </div>
+    </body>
+</html>

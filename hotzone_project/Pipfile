@@ -1,0 +1,17 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+
+[packages]
+django = "~=3.1.2"
+whitenoise = "*"
+gunicorn = "*"
+psycopg2-binary = "*"
+environs = {extras = ["django"], version = "*"}
+waitress = "*"
+
+[requires]
+python_version = "3.7"
