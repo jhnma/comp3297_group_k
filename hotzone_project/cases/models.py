@@ -30,7 +30,7 @@ class Case(models.Model):
 
 class Location(models.Model):
     name=models.CharField(max_length=200)
-    address=models.CharField(max_length=200)
+    address=models.CharField(max_length=200, blank=True)
     x=models.FloatField()
     y=models.FloatField()
     def __str__(self):
@@ -53,15 +53,4 @@ class Visit(models.Model):
     def dateStr(self,o):
 	    return o.strftime("%Y-%m-%d")
 
-'''
-class Staff(models.Model):
-    username=models.CharField(max_length=100)
-    password=models.CharField(max_length=100)
-    sid=models.CharField(max_length=7)
-    firstname=models.CharField(max_length=50)
-    lastname=models.CharField(max_length=50)
-    email=models.CharField(max_length=200)
-    def __str__(self):
-        return self.username
-'''
     
