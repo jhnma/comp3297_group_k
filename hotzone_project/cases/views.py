@@ -20,21 +20,16 @@ def getLocations(request):
     return HttpResponse(data, content_type='application/json')
 
 def addLocation(request):
-    name=request.POST.get('name')
-    address=request.POST.get('address')
-    x=float(request.POST.get('x'))
-    y=float(request.POST.get('y'))
-    obj=Location.objects.filter(name=name, x=x, y=y)
-    if(obj.exists()):
-        return JsonResponse({'status':0, 'pk': obj[0].pk})
+    obj, created = Location.objects.get_or_create(
+        name=request.POST.get('name'),
+        address=request.POST.get('address'),
+        x=float(request.POST.get('x')),
+        y=float(request.POST.get('y')),
+    )
+    if (created):
+        return JsonResponse({'status':1, 'pk': obj.pk})
     else:
-        newLocation=Location()
-        newLocation.name=name
-        newLocation.address=address
-        newLocation.x=x
-        newLocation.y=y
-        newLocation.save()
-        return JsonResponse({'status':1, 'pk': newLocation.pk})
+        return JsonResponse({'status':0, 'pk': obj.pk})
 
 def add(request):
     newVisit=Visit()
