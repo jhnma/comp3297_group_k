@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.views.generic import TemplateView
-from cases.models import Case, Location, Visit
+from cases.models import Case, Location, Visit, Patient, Virus
 from django.http import JsonResponse, HttpResponse
 import urllib.parse
 from django.core import serializers
@@ -39,7 +39,7 @@ def addLocation(request):
 def add(request):
     newVisit=Visit()
     try:
-        newVisit.case=Case.objects.get(pk=request.POST.get('case_id'))
+        newVisit.case=Case.objects.get(case_id=request.POST.get('case_id'))
     except Case.DoesNotExist:
         return JsonResponse({'msg': 'Case not exists.'})
     try:
