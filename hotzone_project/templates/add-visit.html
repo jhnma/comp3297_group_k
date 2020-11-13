@@ -5,15 +5,17 @@
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
         <style>
-            #visit {
-                max-width: 900px;
+            body {
+                margin: auto;
+                max-width: 1200px;
+                padding-left: 10px;
             }
+
             [class*="col-"] {
                 padding-left: 0 !important;
                 padding-right: 0 !important;
             }
             table {
-                width: 1200px !important;
                 table-layout: fixed;
             }
             td {
@@ -21,19 +23,28 @@
                 padding-bottom:10px;
                 word-wrap:break-word;
             }
+            tbody tr {
+                background-color: rgba(238, 238, 238, 0.568);
+            }
+            .scroll-y-vh-40 {
+                max-height: 40vh;
+                overflow-y: scroll;
+            }
+
         </style>
         <script>
             $(document).ready(function() {
-                var current
-                $('#locations').hide()
+                var currentGeodata
+                var currentHotzone
+                $('.hotzoneLocations, .geodataLocations').hide()
                 var today=new Date();
                 $('#date_from').val(today.toISOString().substr(0, 10))
                 $('#date_to').val(today.toISOString().substr(0, 10))
                 function renderLocations(database, data) {
-                    $('#locations tbody').empty()
                     if(database=='hotzone') {
+                        $('.hotzoneLocations tbody').empty()
                         data.forEach((ele, idx, arr) => {
-                            $('#locations tbody').append(
+                            $('.hotzoneLocations tbody').append(
                                 `<tr class="mb-2">
                                 <td colspan=4>${ele.fields.name}</td>
                                 <td colspan=10>${ele.fields.address}</td>
@@ -42,10 +53,12 @@
                                 <td colspan=2><button type="button" class="${database}" data-pk="${ele.pk}" data-idx="${idx}">Select</button></td>
                                 </tr>`)
                         })
+                        $('.hotzoneLocations').show()
                     }
                     else {
+                        $('.geodataLocations tbody').empty()
                         data.forEach((ele, idx, arr) => {
-                            $('#locations tbody').append(
+                            $('.geodataLocations tbody').append(
                                 `<tr class="mb-2">
                                 <td colspan=4>${ele.nameEN}</td>
                                 <td colspan=10>${ele.addressEN}</td>
@@ -54,8 +67,9 @@
                                 <td colspan=2><button type="button" class="${database}" data-idx="${idx}">Add &amp; Select</button></td>
                                 </tr>`)
                         })
+                        $('.geodataLocations').show()
                     }
-                    $('#locations').show()
+                    
                 }
                 function reset() {
                     $("#x_coord").html('')
@@ -79,20 +93,20 @@
                     }
                 }
                 $(document).on('click','.hotzone',function() {
-                    set(current[parseInt($(this).attr('data-idx'))], 'hotzone')
+                    set(currentHotzone[parseInt($(this).attr('data-idx'))], 'hotzone')
                 })
                 $(document).on('click','.geodata',function() {
                     idx=parseInt($(this).attr('data-idx'))
                     obj={
-                        name: current[idx].nameEN,
-                        address: current[idx].addressEN,
-                        x: parseFloat(current[idx].x),
-                        y: parseFloat(current[idx].y),
+                        name: currentGeodata[idx].nameEN,
+                        address: currentGeodata[idx].addressEN,
+                        x: parseFloat(currentGeodata[idx].x),
+                        y: parseFloat(currentGeodata[idx].y),
                         csrfmiddlewaretoken: '{{ csrf_token }}'
                     }
                     $.post('{% url "add-location" %}', obj, function(data) {
                         $('#visit').attr('data-pk',data.pk)
-                        set(current[idx], 'geodata')
+                        set(currentGeodata[idx], 'geodata')
                         if(data.status==1) {
                             alert("Location added to HotZone.")
                         }
@@ -118,68 +132,64 @@
                         alert(data.msg)
                     }, 'json')
                 })
-                $('#searchHotzone').click(function() {
+                $('#search').click(function() {
                     if($("#location").val()!='') {
                         $.get('{% url "get-locations" %}',{name: $("#location").val()}, function(data) {
-                            current=data
+                            currentHotzone=data
+                            /*
                             if(data.length==1) {
                                 set(data[0], 'hotzone')
-                                $('#locations').hide()
+                                $('.hotzoneLocations').hide()
                             }
                             else if(data.length>1) {
-                                reset()
-                                renderLocations('hotzone', data)
-                            }
-                            else {
-                                reset()
-                                $('#locations').hide()
-                                alert("No record in HotZone.")
-                            }
-                        },'json')
-                    }
-                    else {
-                        $.get('{% url "get-locations" %}',{name: ''}, function(data) {
-                            current=data
+                            */
                             if(data.length>=1) {
                                 reset()
                                 renderLocations('hotzone', data)
                             }
                             else {
                                 reset()
-                                $('#locations').hide()
-                                alert("No record in HotZone.")
+                                $('.hotzoneLocations').hide()
                             }
                         },'json')
-                    }
-                })
-                $('#searchGeoData').click(function() {
-                    if($("#location").val()!='') {
+
                         $.ajax({
                             url: 'https://geodata.gov.hk/gs/api/v1.0.0/locationSearch',
                             type: 'GET',
                             data: {q: $("#location").val()},
                             success: function(data) { 
-                                current=data
+                                currentGeodata=data
                                 if(data.length>=1) {
                                     reset()
                                     renderLocations('geodata', data)
                                 }
                                 else {
                                     reset()
-                                    $('#locations').hide()
+                                    $('.geodataLocations').hide()
                                     alert("No record in GeoData Store.")
                                 }
                             },
                             error: function(data) {
                                 reset()
-                                $('#locations').hide()
+                                $('.geodataLocations').hide()
                                 alert("No record in GeoData Store.")
                             }
                         })
                     }
                     else {
-                        reset()
-                        $('#locations').hide()
+                        $('.geodataLocations').hide()
+                        $.get('{% url "get-locations" %}',{name: ''}, function(data) {
+                            currentHotzone=data
+                            if(data.length>=1) {
+                                reset()
+                                renderLocations('hotzone', data)
+                            }
+                            else {
+                                reset()
+                                $('.hotzoneLocations').hide()
+                                alert("No record in HotZone.")
+                            }
+                        },'json')
                     }
                 })
             })
@@ -187,7 +197,7 @@
     </head>
     <body>
         <form class="container-fluid mt-4" id="visit" data-pk=''>
-            <div class="row">
+            <div class="row container">
                 <div class="col-6">
                     <div class="row">
                         <div class='col-3'>
@@ -201,15 +211,15 @@
                 <div class="col-6">
                     <div class="row">
                         <div class='col-3'>
-                            <label for='date_from'>Date from</label>
+                            X Coord
                         </div>
                         <div class='col-8'>
-                            <input type='date' id='date_from'/>
+                            <span id="x_coord"></span>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="row mt-4">
+            <div class="row container mt-3">
                 <div class="col-6">
                     <div class="row">
                         <div class='col-3'>
@@ -227,50 +237,6 @@
                 <div class="col-6">
                     <div class="row">
                         <div class='col-3'>
-                            <label for='date_to'>Date to</label>
-                        </div>
-                        <div class='col-8'>
-                            <input type='date' id='date_to'/>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="row mt-4">
-                <div class="col-6">
-                    <div class="row">
-                        <div class='col-3'>
-                            <label for='location'>Location</label>
-                        </div>
-                        <div class='col-8'>
-                            <input type='text' id='location'/>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-6">
-                    <div class="row">
-                        <div class='col-3'>
-                            X Coord
-                        </div>
-                        <div class='col-8'>
-                            <span id="x_coord"></span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="row mt-4">
-                <div class="col-6">
-                    <div class="row">
-                        <div class='col-3'>
-                            Address
-                        </div>
-                        <div class='col-8'>
-                            <span id='address'></span>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-6">
-                    <div class="row">
-                        <div class='col-3'>
                             Y Coord
                         </div>
                         <div class='col-8'>
@@ -279,20 +245,56 @@
                     </div>
                 </div>
             </div>
-            <div class="row mt-4">
-                <div class="col-4">
-                    <button type="button" class='col-10' id='searchHotzone'>Search HotZone</button>
+            <div class="row container mt-3">
+                <div class="col-6">
+                    <div class="row">
+                        <div class='col-3'>
+                            <label for='date_from'>Date from</label>
+                        </div>
+                        <div class='col-8'>
+                            <input type='date' id='date_from'/>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class='col-3'>
+                            <label for='date_to'>Date to</label>
+                        </div>
+                            <div class='col-8'>
+                            <input type='date' id='date_to'/>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-4">
-                    <button type="button" id='searchGeoData' class='col-10'>Search GeoData Store</button>
+                <div class="col-6">
+                    <div class="row">
+                        <div class='col-3'>
+                                Address
+                        </div>
+                        <div class='col-8'>
+                            <span id='address'></span>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-4">
+            </div>
+            <div class="row container mt-3">
+                <div class="col-6">
+                    <div class="row">
+                        <div class='col-3'>
+                            <label for='location'>Location</label>
+                        </div>
+                        <div class='col-6'>
+                            <input type='text' id='location' placeholder="keep empty to show all"/>
+                            <button type="button" id='search'>Search</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-3">
                     <button type='button' id='addVisit' class='col-10'>Add Visit Record</button>
                 </div>
             </div>
         </form>
-        <div class='mt-4 container-fluid'>
-            <table class='container-fluid' id="locations">
+        <div class="pl-0 pr-0 container-fluid hotzoneLocations">Location(s) from existing HotZone Database satisfying your query</div>
+        <div class='pl-0 pr-0 mt-1 container-fluid scroll-y-vh-40'>
+            <table class='container-fluid hotzoneLocations'>
                 <colgroup>
                     <col width="5%"><col width="5%">
                     <col width="5%"><col width="5%">
@@ -305,7 +307,7 @@
                     <col width="5%"><col width="5%">
                     <col width="5%"><col width="5%">
                 </colgroup>
-                <thead>
+                <thead class="bg-primary text-white sticky-top">
                     <th colspan=4>Name</th>
                     <th colspan=10>Address</th>
                     <th colspan=2>X coord</th>
@@ -313,7 +315,32 @@
                     <th colspan=2></th>
                 </thead>
                 <tbody></tbody>
-            </ul>
+            </table>
+        </div>
+        <div class="pl-0 pr-0 mt-3 container-fluid geodataLocations">Location(s) from GeoData Database satisfying your query</div>
+        <div class='pl-0 pr-0 mt-1 container-fluid scroll-y-vh-40'>
+            <table class='container-fluid geodataLocations'>
+                <colgroup>
+                    <col width="5%"><col width="5%">
+                    <col width="5%"><col width="5%">
+                    <col width="5%"><col width="5%">
+                    <col width="5%"><col width="5%">
+                    <col width="5%"><col width="5%">
+                    <col width="5%"><col width="5%">
+                    <col width="5%"><col width="5%">
+                    <col width="5%"><col width="5%">
+                    <col width="5%"><col width="5%">
+                    <col width="5%"><col width="5%">
+                </colgroup>
+                <thead class="bg-primary text-white sticky-top">
+                    <th colspan=4>Name</th>
+                    <th colspan=10>Address</th>
+                    <th colspan=2>X coord</th>
+                    <th colspan=2>Y coord</th>
+                    <th colspan=2></th>
+                </thead>
+                <tbody></tbody>
+            </table>
         </div>
     </body>
 </html>
