@@ -1,17 +1,23 @@
 from django.shortcuts import render
-from django.views.generic import TemplateView
+from django.views.generic import View
 from cases.models import Case, Location, Visit, Patient, Virus
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse, HttpResponse, HttpResponseNotFound
 import urllib.parse
 from django.core import serializers
+from django.core.exceptions import ObjectDoesNotExist
 
-class AddVisit(TemplateView):
-    template_name='add-visit.html'
-
-    def get_context_data(self, **kwargs):
-        context=super().get_context_data(**kwargs)
-        context['locations']=Location.objects.all()
-        return context
+class AddVisit(View):
+    def get(self, *args, **kwargs):
+        try:
+            case = Case.objects.get(case_id=kwargs['case_id'])
+        except ObjectDoesNotExist:
+            return HttpResponseNotFound("Case doesn't exist.")
+        patient = case.patient
+        context = {
+            'case_id': case.case_id,
+            'patient_name': patient.firstname + " " + patient.lastname,
+        }
+        return render(self.request, 'add-visit.html', context)
 
 def getLocations(request):
     name=urllib.parse.unquote(request.GET.get('name'))
