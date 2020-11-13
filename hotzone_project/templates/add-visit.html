@@ -24,6 +24,9 @@
                 padding-bottom:10px;
                 word-wrap:break-word;
             }
+            td:first-child {
+                padding-left: 5px;
+            }
             tbody tr {
                 background-color: rgba(238, 238, 238, 0.568);
             }
@@ -37,6 +40,7 @@
             $(document).ready(function() {
                 var currentGeodata
                 var currentHotzone
+                //Changed to 2 classes for the new table & table title
                 $('.hotzoneLocations, .geodataLocations').hide()
                 var today=new Date();
                 $('#date_from').val(today.toISOString().substr(0, 10))
@@ -51,7 +55,7 @@
                                 <td colspan=10>${ele.fields.address}</td>
                                 <td colspan=2>${ele.fields.x}</td>
                                 <td colspan=2>${ele.fields.y}</td>
-                                <td colspan=2><button type="button" class="${database}" data-pk="${ele.pk}" data-idx="${idx}">Select</button></td>
+                                <td colspan=2 class="text-center"><button type="button" class="${database} btn btn-primary" data-pk="${ele.pk}" data-idx="${idx}">Select</button></td>
                                 </tr>`)
                         })
                         $('.hotzoneLocations').show()
@@ -65,7 +69,7 @@
                                 <td colspan=10>${ele.addressEN}</td>
                                 <td colspan=2>${ele.x}</td>
                                 <td colspan=2>${ele.y}</td>
-                                <td colspan=2><button type="button" class="${database}" data-idx="${idx}">Add &amp; Select</button></td>
+                                <td colspan=2 class="text-center"><button type="button" class="${database} btn btn-primary" data-idx="${idx}">Add+Select</button></td>
                                 </tr>`)
                         })
                         $('.geodataLocations').show()
@@ -93,6 +97,7 @@
                         $("#visit").attr('data-pk', data.pk)
                     }
                 }
+                //current changed to currentHotzone/currentGeodata
                 $(document).on('click','.hotzone',function() {
                     set(currentHotzone[parseInt($(this).attr('data-idx'))], 'hotzone')
                 })
@@ -117,7 +122,8 @@
                     }, 'json')
                 })
                 $('#addVisit').click(function() {
-                    if($('#case_id').val()=='' || $('#x_coord').html()=='') {
+                    //case_id is now a hidden input, so wont check
+                    if($('#x_coord').html()=='') {
                         alert('Please input complete data.')
                         return
                     }
@@ -137,13 +143,6 @@
                     if($("#location").val()!='') {
                         $.get('{% url "get-locations" %}',{name: $("#location").val()}, function(data) {
                             currentHotzone=data
-                            /*
-                            if(data.length==1) {
-                                set(data[0], 'hotzone')
-                                $('.hotzoneLocations').hide()
-                            }
-                            else if(data.length>1) {
-                            */
                             if(data.length>=1) {
                                 reset()
                                 renderLocations('hotzone', data)
@@ -228,8 +227,8 @@
                         <div class='col-3'>
                             <label for='category'>Category</label>
                         </div>
-                        <div class='col-8'>
-                            <select id='category'>
+                        <div class='col-4'>
+                            <select id='category' class="form-control">
                                 <option value='r'>Residence</option>
                                 <option value='w'>Workplace</option>
                                 <option value='v'>Visit</option>
@@ -252,18 +251,18 @@
                 <div class="col-6">
                     <div class="row">
                         <div class='col-3'>
-                            <label for='date_from'>Date from</label>
+                            <label for='date_from'>Date From</label>
                         </div>
-                        <div class='col-8'>
-                            <input type='date' id='date_from'/>
+                        <div class='col-4'>
+                            <input type='date' id='date_from' class="form-control"/>
                         </div>
                     </div>
                     <div class="row mt-3">
                         <div class='col-3'>
-                            <label for='date_to'>Date to</label>
+                            <label for='date_to'>Date To</label>
                         </div>
-                            <div class='col-8'>
-                            <input type='date' id='date_to'/>
+                            <div class='col-4'>
+                            <input type='date' id='date_to' class="form-control"/>
                         </div>
                     </div>
                 </div>
@@ -279,14 +278,16 @@
                 </div>
             </div>
             <div class="row container mt-3">
-                <div class="col-6">
+                <div class="col-9">
                     <div class="row">
-                        <div class='col-3'>
+                        <div class='col-2'>
                             <label for='location'>Location</label>
                         </div>
-                        <div class='col-6'>
-                            <input type='text' id='location' placeholder="keep empty to show all"/>
-                            <button type="button" id='search'>Search</button>
+                        <div class='col-5'>
+                            <input type='text' id='location' class="form-control" placeholder="Keep empty to list all existing Locations"/>
+                        </div>
+                        <div class='col-5'>
+                            <button type="button" id='search' class="ml-3 btn btn-primary">Search</button>
                         </div>
                     </div>
                 </div>
