@@ -36,6 +36,7 @@ ALLOWED_HOSTS = ['safe-stream-64153.herokuapp.com', 'localhost', '127.0.0.1']
 
 INSTALLED_APPS = [
     'cases.apps.CasesConfig',
+    'login.apps.LoginConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -72,6 +73,8 @@ TEMPLATES = [
         },
     },
 ]
+
+AUTH_USER_MODEL = 'login.Staff'
 
 WSGI_APPLICATION = 'hotzone_config.wsgi.application'
 
@@ -123,3 +126,5 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 STATIC_ROOT = str(BASE_DIR.joinpath('staticfiles'))
+
+LOGIN_REDIRECT_URL = '/home'
