@@ -141,6 +141,7 @@
                 })
                 $('#search').click(function() {
                     if($("#location").val()!='') {
+                        $('#search').text("Searching")
                         $.get('{% url "get-locations" %}',{name: $("#location").val()}, function(data) {
                             currentHotzone=data
                             if(data.length>=1) {
@@ -157,7 +158,8 @@
                             url: 'https://geodata.gov.hk/gs/api/v1.0.0/locationSearch',
                             type: 'GET',
                             data: {q: $("#location").val()},
-                            success: function(data) { 
+                            success: function(data) {
+                                $('#search').text("Search")
                                 currentGeodata=data
                                 if(data.length>=1) {
                                     reset()
@@ -170,6 +172,7 @@
                                 }
                             },
                             error: function(data) {
+                                $('#search').text("Search")
                                 reset()
                                 $('.geodataLocations').hide()
                                 alert("No record in GeoData Store.")
