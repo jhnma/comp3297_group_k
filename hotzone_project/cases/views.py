@@ -5,6 +5,7 @@ from django.http import JsonResponse, HttpResponse, HttpResponseNotFound
 import urllib.parse
 from django.core import serializers
 from django.core.exceptions import ObjectDoesNotExist
+import json
 
 class AddVisit(View):
     def get(self, *args, **kwargs):
@@ -38,17 +39,15 @@ def addLocation(request):
         return JsonResponse({'status':0, 'pk': obj.pk})
 
 def add(request):
-    newVisit=Visit()
-    try:
-        newVisit.case=Case.objects.get(case_id=request.POST.get('case_id'))
-    except Case.DoesNotExist:
-        return JsonResponse({'msg': 'Case not exists.'})
-    try:
-        newVisit.location=Location.objects.get(pk=request.POST.get('location_id'))
-    except:
-        return JsonResponse({'msg': 'Location not exists.'})
-    newVisit.date_from=request.POST.get('date_from')
-    newVisit.date_to=request.POST.get('date_to')
-    newVisit.category=request.POST.get('category')
-    newVisit.save()
-    return JsonResponse({'msg': 'Visit added.'})
+    locations=request.POST.getlist('locations[]')
+    case=Case.objects.get(case_id=request.POST.get('case_id'))
+    for i in range(0,len(locations)):
+        data=json.loads(locations[i])
+        newVisit=Visit()
+        newVisit.case=case
+        newVisit.location=Location.objects.get(pk=data['location_id'])
+        newVisit.date_from=data['date_from']
+        newVisit.date_to=data['date_to']
+        newVisit.category=data['category']
+        newVisit.save()
+    return JsonResponse({'msg': 'Visits added.'})
