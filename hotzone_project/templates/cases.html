@@ -1,0 +1,49 @@
+<html>
+<h1> Cases </h1>
+<h2> Search / Filter Case </h2>
+<form method="get" action="/cases">
+    <input type="text" placeholder="Search.." name="name">
+    <input type="submit" value="Search">
+</form>
+
+
+<table>
+    <tr>
+        <th>Case Id</th>
+        <th>Patient Name</th>
+        <th>Virus Name</th>
+        <th>Date Confirmed</th>
+        <th>Local or Imported</th>
+        <th>Visits in Transmission Period</th>
+        <th></th>
+    </tr>
+    {% for case in search_result  %}
+    <tr>
+        <td>{{case.id}}</td>
+        <td>{{case.name}}</td>
+        <td>{{case.virus}}</td>
+        <td>{{case.date}}</td>
+        <td>{{case.category}}</td>
+        <td>
+
+            <form method="get" action="/view_visits/{{case.id}}">
+                <input type="submit" value="click">
+            </form>
+
+        </td>
+
+        <td>
+
+            <form method="get" action="/{{case.id}}/add_visit">
+                <input type="submit" value="Edit entry">
+            </form>
+
+        </td>
+    </tr>
+    {% empty %}
+    <h1> No result </h1>
+    {% endfor %}
+
+</table>
+
+</html>

@@ -25,8 +25,10 @@ class Case(models.Model):
         ('i', 'imported')
     )
     category=models.CharField(max_length=1, choices=TYPE)
+    # changed by wesley
     def __str__(self):
-        return self.case_id
+        return f'{self.case_id},{self.patient},{self.virus},{self.date},{self.TYPE},{self.category}'
+        
 
 class Location(models.Model):
     name=models.CharField(max_length=200)
