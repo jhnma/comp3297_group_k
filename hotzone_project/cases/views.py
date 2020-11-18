@@ -15,8 +15,8 @@ class AddVisit(View):
             return HttpResponseNotFound("Case doesn't exist.")
         patient = case.patient
         context = {
-            'case_id': case.case_id,
-            'patient_name': patient.firstname + " " + patient.lastname,
+            'case': case,
+            'patient': patient,
         }
         return render(self.request, 'add-visit.html', context)
 
