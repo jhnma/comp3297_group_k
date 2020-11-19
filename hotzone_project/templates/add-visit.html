@@ -42,8 +42,6 @@
                 var currentGeodata
                 var currentHotzone
                 var addedVisitsID=0
-                //Changed to 2 classes for the new table & table title
-                $('.hotzoneLocations, .geodataLocations, #addedVisits').hide()
                 var today=new Date();
                 $('#date_from').val(today.toISOString().substr(0, 10))
                 $('#date_to').val(today.toISOString().substr(0, 10))
@@ -128,10 +126,13 @@
                     $(qSel+'.addedVisits_date_to').val($('#date_to').val()) 
                     addedVisitsID++
                 }
-                //current changed to currentHotzone/currentGeodata
                 $(document).on('click','.hotzone',function() {
                     let targetData = currentHotzone[parseInt($(this).attr('data-idx'))];
                     addvisit(targetData, 'hotzone', targetData.pk);
+                    $('body').animate({
+                        scrollTop: $('#addedVisits').offset().top
+                    }, 600, function () {
+                    });
                 })
                 $(document).on('click','.geodata',function() {
                     idx=parseInt($(this).attr('data-idx'))
@@ -150,6 +151,10 @@
                         else {
                             alert("Location in HotZone already.")
                         }
+                        $('body').animate({
+                            scrollTop: $('#addedVisits').offset().top
+                        }, 600, function () {
+                        });
                     }, 'json')
 
                 })
@@ -179,7 +184,8 @@
                         resetAddedVisits()
                     }, 'json')
                 })
-                $('#search').click(function() {
+                $('#search').click(function(e) {
+                    e.preventDefault();
                     if($("#location").val()!='') {
                         $('#search').text("Searching")
                         $.get('{% url "get-locations" %}',{name: $("#location").val()}, function(data) {
@@ -301,15 +307,15 @@
                             <input type='text' id='location' class="form-control" placeholder="Keep empty to list all existing Locations"/>
                         </div>
                         <div class='col-5'>
-                            <button type="button" id='search' class="ml-3 btn btn-primary">Search</button>
+                            <button type="submit" id='search' class="ml-3 btn btn-primary">Search</button>
                         </div>
                     </div>
                 </div>
             </div>
         </form>
-        <div class="pl-0 pr-0 container-fluid hotzoneLocations">Location(s) from existing HotZone Database satisfying your query</div>
+        <div class="pl-0 pr-0 container-fluid hotzoneLocations" style="display: none;">Location(s) from existing HotZone Database satisfying your query</div>
         <div class='pl-0 pr-0 mt-1 container-fluid scroll-y-vh-40'>
-            <table class='container-fluid hotzoneLocations'>
+            <table class='container-fluid hotzoneLocations' style="display: none;">
                 <colgroup>
                     <col width="5%"><col width="5%">
                     <col width="5%"><col width="5%">
@@ -332,9 +338,9 @@
                 <tbody></tbody>
             </table>
         </div>
-        <div class="pl-0 pr-0 mt-3 container-fluid geodataLocations">Location(s) from GeoData Database satisfying your query</div>
+        <div class="pl-0 pr-0 mt-3 container-fluid geodataLocations" style="display: none;">Location(s) from GeoData Database satisfying your query</div>
         <div class='pl-0 pr-0 mt-1 container-fluid scroll-y-vh-40'>
-            <table class='container-fluid geodataLocations'>
+            <table class='container-fluid geodataLocations' style="display: none;">
                 <colgroup>
                     <col width="5%"><col width="5%">
                     <col width="5%"><col width="5%">
@@ -357,7 +363,7 @@
                 <tbody></tbody>
             </table>
         </div>
-        <div id="addedVisits">
+        <div id="addedVisits" style="display: none;">
             <div class="pl-0 pr-0 mt-3 container-fluid">Added Visits</div>
             <div class='pl-0 pr-0 mt-1 container-fluid scroll-y-vh-40'>
                 <table class='container-fluid addedVisits'>
