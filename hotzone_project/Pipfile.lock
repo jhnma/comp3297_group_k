@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "8b8a2dce0539fe0b0fb146d4233bdb99e6a655c75f92465e117cc2e5a96a33fa"
+            "sha256": "2264c60091d63d449b74a6440e955a57fea4ef63c11076c060ac897096b6f28a"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -21,7 +21,7 @@
                 "sha256:a5098bc870b80e7b872bff60bb363c7f2c2c89078759f6c47b53ff8c525a152e",
                 "sha256:cd88907ecaec59d78e4ac00ea665b03e571cb37e3a0e37b3702af1a9e86c365a"
             ],
-            "markers": "python_version >= '3.5'",
+            "index": "pypi",
             "version": "==3.3.0"
         },
         "dj-database-url": {
@@ -29,6 +29,7 @@
                 "sha256:4aeaeb1f573c74835b0686a2b46b85990571159ffc21aa57ecd4d1e1cb334163",
                 "sha256:851785365761ebe4994a921b433062309eb882fedd318e1b0fcecc607ed02da9"
             ],
+            "index": "pypi",
             "version": "==0.5.0"
         },
         "dj-email-url": {
@@ -36,6 +37,7 @@
                 "sha256:32dc567c5cc3d4106710ec36dd645c8c1b20e2d8f588a17ab88bcc23e347d00a",
                 "sha256:557c07b3039befdc1c561c4038b155d659c09f996d5e33c91189c2e23969da90"
             ],
+            "index": "pypi",
             "version": "==1.0.1"
         },
         "django": {
@@ -51,12 +53,11 @@
                 "sha256:889ac5d56105bdf44c0fd8f82c024119e198baf0bf698fdf49b1d5de92d8d4bb",
                 "sha256:d0ee0d6c5daab92787bff47a4a6f5a6cf97c3c80d81a990820b2af16e12ad65a"
             ],
+            "index": "pypi",
             "version": "==3.1.2"
         },
         "environs": {
-            "extras": [
-                "django"
-            ],
+            "extras": [],
             "hashes": [
                 "sha256:889b99e87bb3c8c2c429f504df17115bad4b35a19fd01b7defea7d563ca1276b",
                 "sha256:9112dcd3245acbac51bb362981672f37d9d09188f56fd6228b5a9f70d0fa0fd8"
@@ -77,7 +78,7 @@
                 "sha256:4bc31ab18133083b12893c61f2fc38b93c390d3fd6ae2ac61980b7dc936a1afa",
                 "sha256:97ad6acaf727be986330969cff16040fce051510759ca709de9cd48093c55d04"
             ],
-            "markers": "python_version >= '3.5'",
+            "index": "pypi",
             "version": "==3.9.0"
         },
         "psycopg2-binary": {
@@ -126,6 +127,7 @@
                 "sha256:0c8d1b80d1a1e91717ea7d526178e3882732420b03f08afea0406db6402e220e",
                 "sha256:587825ed60b1711daea4832cf37524dfd404325b7db5e25ebe88c495c9f807a0"
             ],
+            "index": "pypi",
             "version": "==0.15.0"
         },
         "pytz": {
@@ -133,6 +135,7 @@
                 "sha256:3e6b7dd2d1e0a59084bcee14a17af60c5c562cdc16d828e8eba2e683d3a7e268",
                 "sha256:5c55e189b682d420be27c6995ba6edce0c0a77dd67bfbe2ae6607134d5851ffd"
             ],
+            "index": "pypi",
             "version": "==2020.4"
         },
         "sqlparse": {
@@ -140,7 +143,7 @@
                 "sha256:017cde379adbd6a1f15a61873f43e8274179378e95ef3fede90b5aa64d304ed0",
                 "sha256:0f91fd2e829c44362cbcfab3e9ae12e22badaa8a29ad5ff599f9ec109f0454e8"
             ],
-            "markers": "python_version >= '3.5'",
+            "index": "pypi",
             "version": "==0.4.1"
         },
         "waitress": {
