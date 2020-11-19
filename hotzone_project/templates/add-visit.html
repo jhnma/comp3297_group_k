@@ -4,16 +4,20 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+        <title>Case {{ case.case_id }} - Add Visits</title>
         <style>
-            #visit {
-                max-width: 900px;
+            body {
+                margin: auto;
+                max-width: 1200px;
+                padding-left: 10px;
+                padding-bottom: 15px;
             }
+
             [class*="col-"] {
                 padding-left: 0 !important;
                 padding-right: 0 !important;
             }
             table {
-                width: 1200px !important;
                 table-layout: fixed;
             }
             td {
@@ -21,202 +25,250 @@
                 padding-bottom:10px;
                 word-wrap:break-word;
             }
+            td:first-child {
+                padding-left: 5px;
+            }
+            tbody tr {
+                background-color: rgba(238, 238, 238, 0.568);
+            }
+            .scroll-y-vh-40 {
+                max-height: 40vh;
+                overflow-y: scroll;
+            }
+
         </style>
         <script>
             $(document).ready(function() {
-                var current
-                $('#locations').hide()
+                var currentGeodata
+                var currentHotzone
+                var addedVisitsID=0
                 var today=new Date();
                 $('#date_from').val(today.toISOString().substr(0, 10))
                 $('#date_to').val(today.toISOString().substr(0, 10))
                 function renderLocations(database, data) {
-                    $('#locations tbody').empty()
                     if(database=='hotzone') {
+                        $('.hotzoneLocations tbody').empty()
                         data.forEach((ele, idx, arr) => {
-                            $('#locations tbody').append(
+                            $('.hotzoneLocations tbody').append(
                                 `<tr class="mb-2">
                                 <td colspan=4>${ele.fields.name}</td>
                                 <td colspan=10>${ele.fields.address}</td>
                                 <td colspan=2>${ele.fields.x}</td>
                                 <td colspan=2>${ele.fields.y}</td>
-                                <td colspan=2><button type="button" class="${database}" data-pk="${ele.pk}" data-idx="${idx}">Select</button></td>
+                                <td colspan=2 class="text-center"><button type="button" class="${database} btn btn-primary" data-pk="${ele.pk}" data-idx="${idx}">Select</button></td>
                                 </tr>`)
                         })
+                        $('.hotzoneLocations').show()
                     }
                     else {
+                        $('.geodataLocations tbody').empty()
                         data.forEach((ele, idx, arr) => {
-                            $('#locations tbody').append(
+                            $('.geodataLocations tbody').append(
                                 `<tr class="mb-2">
                                 <td colspan=4>${ele.nameEN}</td>
                                 <td colspan=10>${ele.addressEN}</td>
                                 <td colspan=2>${ele.x}</td>
                                 <td colspan=2>${ele.y}</td>
-                                <td colspan=2><button type="button" class="${database}" data-idx="${idx}">Add &amp; Select</button></td>
+                                <td colspan=2 class="text-center"><button type="button" class="${database} btn btn-primary" data-idx="${idx}">Add+Select</button></td>
                                 </tr>`)
                         })
+                        $('.geodataLocations').show()
                     }
-                    $('#locations').show()
+                    
                 }
                 function reset() {
                     $("#x_coord").html('')
                     $("#y_coord").html('')
                     $("#address").html('')
                 }
-                function set(data, from) {
+                function resetAddedVisits() {
+                    addedVisitsID=0
+                    $('#addedVisits').hide()
+                    $('#addedVisits tbody').empty()
+                }
+                function addvisit(data, from, pk) {
                     if(from=='hotzone') {
-                        $("#x_coord").html(data.fields.x)
-                        $("#y_coord").html(data.fields.y)
-                        $("#address").html(data.fields.address)
-                        $("#location").val(data.fields.name)
-                        $("#visit").attr('data-pk', data.pk)
+                        var x = data.fields.x;
+                        var y = data.fields.y;
+                        var address = data.fields.address;
+                        var name = data.fields.name;
                     }
                     else {
-                        $("#x_coord").html(data.x)
-                        $("#y_coord").html(data.y)
-                        $("#address").html(data.addressEN)
-                        $("#location").val(data.nameEN)
-                        $("#visit").attr('data-pk', data.pk)
+                        var x = data.x;
+                        var y = data.y;
+                        var address = data.addressEN;
+                        var name = data.nameEN;
                     }
+                    $('#addedVisits').show()
+                    $('.addedVisits tbody').append(
+                        `<tr class="mb-2" data-visitID=${addedVisitsID} data-pk=${pk}>
+                            <td colspan=4 class='addedVisits_location'>${name}</td>
+                            <td colspan=5 class='addedVisits_address'>${address}</td>
+                            <td colspan=3>
+                                <input type='date' class='addedVisits_date_from'/>
+                            </td>
+                            <td colspan=3>
+                                <input type='date' class='addedVisits_date_to'/>
+                            </td>
+                            <td colspan=3>
+                                <select class='addedVisits_category'>
+                                    ${$('#category').html()}
+                                </select>
+                            </td>
+                            <td colspan=2 class="text-center">
+                                <button data-id=${addedVisitsID} type="button" class="btn btn-warning remove">Remove</button>
+                            </td>
+                        </tr>`
+                    )
+                    var qSel=`[data-visitID=${addedVisitsID}] `
+                    $(qSel+'.addedVisits_category').val($('#category').val())
+                    $(qSel+'.addedVisits_date_from').val($('#date_from').val())     
+                    $(qSel+'.addedVisits_date_to').val($('#date_to').val()) 
+                    addedVisitsID++
                 }
                 $(document).on('click','.hotzone',function() {
-                    set(current[parseInt($(this).attr('data-idx'))], 'hotzone')
+                    let targetData = currentHotzone[parseInt($(this).attr('data-idx'))];
+                    addvisit(targetData, 'hotzone', targetData.pk);
+                    $('body').animate({
+                        scrollTop: $('#addedVisits').offset().top
+                    }, 600, function () {
+                    });
                 })
                 $(document).on('click','.geodata',function() {
                     idx=parseInt($(this).attr('data-idx'))
                     obj={
-                        name: current[idx].nameEN,
-                        address: current[idx].addressEN,
-                        x: parseFloat(current[idx].x),
-                        y: parseFloat(current[idx].y),
+                        name: currentGeodata[idx].nameEN,
+                        address: currentGeodata[idx].addressEN,
+                        x: parseFloat(currentGeodata[idx].x),
+                        y: parseFloat(currentGeodata[idx].y),
                         csrfmiddlewaretoken: '{{ csrf_token }}'
                     }
                     $.post('{% url "add-location" %}', obj, function(data) {
-                        $('#visit').attr('data-pk',data.pk)
-                        set(current[idx], 'geodata')
+                        addvisit(currentGeodata[idx], 'geodata', data.pk)
                         if(data.status==1) {
                             alert("Location added to HotZone.")
                         }
                         else {
                             alert("Location in HotZone already.")
                         }
+                        $('body').animate({
+                            scrollTop: $('#addedVisits').offset().top
+                        }, 600, function () {
+                        });
                     }, 'json')
+
                 })
-                $('#addVisit').click(function() {
-                    if($('#case_id').val()=='' || $('#x_coord').html()=='') {
-                        alert('Please input complete data.')
+                $(document).on('click', '.remove', function() {
+                    $(`[data-visitID=${$(this).attr('data-id')}]`).remove()
+                })
+                $('#save').click(function() {
+                    if($('#addedVisits tbody').children().length==0) {
                         return
                     }
-                    obj={
+                    var visits={
                         case_id: $("#case_id").val(),
-                        location_id: $('#visit').attr('data-pk'),
-                        category: $('#category option:selected').attr('value'),
-                        date_from: $('#date_from').val(),
-                        date_to: $('#date_to').val(),
-                        csrfmiddlewaretoken: '{{ csrf_token }}'
+                        csrfmiddlewaretoken: '{{ csrf_token }}',
+                        'locations[]': []
                     }
-                    $.post('{% url "add" %}', obj, function(data) {
+                    $('[data-visitID]').each(function() {
+                        var visit={
+                            location_id: $(this).attr('data-pk'),
+                            category: $(this).find('.addedVisits_category option:selected').attr('value'),
+                            date_from: $(this).find(':nth-child(3) .addedVisits_date_from').val(),
+                            date_to: $(this).find(':nth-child(4) .addedVisits_date_to').val()
+                        }
+                        visits['locations[]'].push(JSON.stringify(visit))
+                    })
+                    $.post('{% url "add" %}', visits, function(data) {
                         alert(data.msg)
+                        resetAddedVisits()
                     }, 'json')
                 })
-                $('#searchHotzone').click(function() {
+                $('#search').click(function(e) {
+                    e.preventDefault();
                     if($("#location").val()!='') {
+                        $('#search').text("Searching")
                         $.get('{% url "get-locations" %}',{name: $("#location").val()}, function(data) {
-                            current=data
-                            if(data.length==1) {
-                                set(data[0], 'hotzone')
-                                $('#locations').hide()
-                            }
-                            else if(data.length>1) {
-                                reset()
-                                renderLocations('hotzone', data)
-                            }
-                            else {
-                                reset()
-                                $('#locations').hide()
-                                alert("No record in HotZone.")
-                            }
-                        },'json')
-                    }
-                    else {
-                        $.get('{% url "get-locations" %}',{name: ''}, function(data) {
-                            current=data
+                            currentHotzone=data
                             if(data.length>=1) {
                                 reset()
                                 renderLocations('hotzone', data)
                             }
                             else {
                                 reset()
-                                $('#locations').hide()
-                                alert("No record in HotZone.")
+                                $('.hotzoneLocations').hide()
                             }
                         },'json')
-                    }
-                })
-                $('#searchGeoData').click(function() {
-                    if($("#location").val()!='') {
+
                         $.ajax({
                             url: 'https://geodata.gov.hk/gs/api/v1.0.0/locationSearch',
                             type: 'GET',
                             data: {q: $("#location").val()},
-                            success: function(data) { 
-                                current=data
+                            success: function(data) {
+                                $('#search').text("Search")
+                                currentGeodata=data
                                 if(data.length>=1) {
                                     reset()
                                     renderLocations('geodata', data)
                                 }
                                 else {
                                     reset()
-                                    $('#locations').hide()
+                                    $('.geodataLocations').hide()
                                     alert("No record in GeoData Store.")
                                 }
                             },
                             error: function(data) {
+                                $('#search').text("Search")
                                 reset()
-                                $('#locations').hide()
+                                $('.geodataLocations').hide()
                                 alert("No record in GeoData Store.")
                             }
                         })
                     }
                     else {
-                        reset()
-                        $('#locations').hide()
+                        $('.geodataLocations').hide()
+                        $.get('{% url "get-locations" %}',{name: ''}, function(data) {
+                            currentHotzone=data
+                            if(data.length>=1) {
+                                reset()
+                                renderLocations('hotzone', data)
+                            }
+                            else {
+                                reset()
+                                $('.hotzoneLocations').hide()
+                                alert("No record in HotZone.")
+                            }
+                        },'json')
                     }
                 })
             })
         </script>
     </head>
     <body>
+        <h3>Add Visit for Case {{ case.case_id }}</h3>
+        <h5>{{ case.get_category_display|title }} case, confirmed on {{ case.date|date:"d-m-Y" }}</h5>
+        <input type='hidden' id='case_id' value="{{ case.case_id }}"/>
         <form class="container-fluid mt-4" id="visit" data-pk=''>
-            <div class="row">
+            <div class="row container">
                 <div class="col-6">
                     <div class="row">
                         <div class='col-3'>
-                            <label for='case_id'>Case number</label>
+                            Patient
                         </div>
                         <div class='col-8'>
-                            <input type='text' id='case_id' value="{{ case_id }}" readonly/>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-6">
-                    <div class="row">
-                        <div class='col-3'>
-                            <label for='date_from'>Date from</label>
-                        </div>
-                        <div class='col-8'>
-                            <input type='date' id='date_from'/>
+                            {{ patient.firstname }} {{ patient.lastname }}, ID: {{ patient.idn }}
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="row mt-4">
+            <div class="row container mt-3">
                 <div class="col-6">
                     <div class="row">
                         <div class='col-3'>
                             <label for='category'>Category</label>
                         </div>
-                        <div class='col-8'>
-                            <select id='category'>
+                        <div class='col-4'>
+                            <select id='category' class="form-control">
                                 <option value='r'>Residence</option>
                                 <option value='w'>Workplace</option>
                                 <option value='v'>Visit</option>
@@ -224,75 +276,46 @@
                         </div>
                     </div>
                 </div>
+            </div>
+            <div class="row container mt-3">
                 <div class="col-6">
                     <div class="row">
                         <div class='col-3'>
-                            <label for='date_to'>Date to</label>
+                            <label for='date_from'>Date From</label>
                         </div>
-                        <div class='col-8'>
-                            <input type='date' id='date_to'/>
+                        <div class='col-4'>
+                            <input type='date' id='date_from' class="form-control"/>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class='col-3'>
+                            <label for='date_to'>Date To</label>
+                        </div>
+                            <div class='col-4'>
+                            <input type='date' id='date_to' class="form-control"/>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="row mt-4">
-                <div class="col-6">
+            <div class="row container mt-3">
+                <div class="col-9">
                     <div class="row">
-                        <div class='col-3'>
+                        <div class='col-2'>
                             <label for='location'>Location</label>
                         </div>
-                        <div class='col-8'>
-                            <input type='text' id='location'/>
+                        <div class='col-5'>
+                            <input type='text' id='location' class="form-control" placeholder="Keep empty to list all existing Locations"/>
+                        </div>
+                        <div class='col-5'>
+                            <button type="submit" id='search' class="ml-3 btn btn-primary">Search</button>
                         </div>
                     </div>
-                </div>
-                <div class="col-6">
-                    <div class="row">
-                        <div class='col-3'>
-                            X Coord
-                        </div>
-                        <div class='col-8'>
-                            <span id="x_coord"></span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="row mt-4">
-                <div class="col-6">
-                    <div class="row">
-                        <div class='col-3'>
-                            Address
-                        </div>
-                        <div class='col-8'>
-                            <span id='address'></span>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-6">
-                    <div class="row">
-                        <div class='col-3'>
-                            Y Coord
-                        </div>
-                        <div class='col-8'>
-                            <span id="y_coord"></span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="row mt-4">
-                <div class="col-4">
-                    <button type="button" class='col-10' id='searchHotzone'>Search HotZone</button>
-                </div>
-                <div class="col-4">
-                    <button type="button" id='searchGeoData' class='col-10'>Search GeoData Store</button>
-                </div>
-                <div class="col-4">
-                    <button type='button' id='addVisit' class='col-10'>Add Visit Record</button>
                 </div>
             </div>
         </form>
-        <div class='mt-4 container-fluid'>
-            <table class='container-fluid' id="locations">
+        <div class="pl-0 pr-0 container-fluid hotzoneLocations" style="display: none;">Location(s) from existing HotZone Database satisfying your query</div>
+        <div class='pl-0 pr-0 mt-1 container-fluid scroll-y-vh-40'>
+            <table class='container-fluid hotzoneLocations' style="display: none;">
                 <colgroup>
                     <col width="5%"><col width="5%">
                     <col width="5%"><col width="5%">
@@ -305,7 +328,7 @@
                     <col width="5%"><col width="5%">
                     <col width="5%"><col width="5%">
                 </colgroup>
-                <thead>
+                <thead class="bg-primary text-white sticky-top">
                     <th colspan=4>Name</th>
                     <th colspan=10>Address</th>
                     <th colspan=2>X coord</th>
@@ -313,7 +336,61 @@
                     <th colspan=2></th>
                 </thead>
                 <tbody></tbody>
-            </ul>
+            </table>
+        </div>
+        <div class="pl-0 pr-0 mt-3 container-fluid geodataLocations" style="display: none;">Location(s) from GeoData Database satisfying your query</div>
+        <div class='pl-0 pr-0 mt-1 container-fluid scroll-y-vh-40'>
+            <table class='container-fluid geodataLocations' style="display: none;">
+                <colgroup>
+                    <col width="5%"><col width="5%">
+                    <col width="5%"><col width="5%">
+                    <col width="5%"><col width="5%">
+                    <col width="5%"><col width="5%">
+                    <col width="5%"><col width="5%">
+                    <col width="5%"><col width="5%">
+                    <col width="5%"><col width="5%">
+                    <col width="5%"><col width="5%">
+                    <col width="5%"><col width="5%">
+                    <col width="5%"><col width="5%">
+                </colgroup>
+                <thead class="bg-primary text-white sticky-top">
+                    <th colspan=4>Name</th>
+                    <th colspan=10>Address</th>
+                    <th colspan=2>X coord</th>
+                    <th colspan=2>Y coord</th>
+                    <th colspan=2></th>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <div id="addedVisits" style="display: none;">
+            <div class="pl-0 pr-0 mt-3 container-fluid">Added Visits</div>
+            <div class='pl-0 pr-0 mt-1 container-fluid scroll-y-vh-40'>
+                <table class='container-fluid addedVisits'>
+                    <colgroup>
+                        <col width="5%"><col width="5%">
+                        <col width="5%"><col width="5%">
+                        <col width="5%"><col width="5%">
+                        <col width="5%"><col width="5%">
+                        <col width="5%"><col width="5%">
+                        <col width="5%"><col width="5%">
+                        <col width="5%"><col width="5%">
+                        <col width="5%"><col width="5%">
+                        <col width="5%"><col width="5%">
+                        <col width="5%"><col width="5%">
+                    </colgroup>
+                    <thead class="bg-warning text-white sticky-top">
+                        <th colspan=4>Location</th>
+                        <th colspan=5>Address</th>
+                        <th colspan=3>Date From</th>
+                        <th colspan=3>Date To</th>
+                        <th colspan=3>Category</th>
+                        <th colspan=2></th>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <button type="button" id="save" class="btn btn-primary float-right mt-4 mb-4">Save</button>
         </div>
     </body>
 </html>

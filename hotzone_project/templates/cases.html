@@ -26,7 +26,7 @@
         <td>{{case.category}}</td>
         <td>
 
-            <form method="get" action="/view_visits/{{case.id}}">
+            <form method="get" action="{{case.id}}/view_visits">
                 <input type="submit" value="click">
             </form>
 
@@ -34,7 +34,7 @@
 
         <td>
 
-            <form method="get" action="/{{case.id}}/add_visit">
+            <form method="get" action="{{case.id}}/add_visit">
                 <input type="submit" value="Edit entry">
             </form>
 
