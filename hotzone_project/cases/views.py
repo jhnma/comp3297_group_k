@@ -1,18 +1,25 @@
 from django.shortcuts import render
-from django.views.generic import TemplateView
+from django.views.generic import View, TemplateView
 from cases.models import Case, Location, Visit, Patient, Virus
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse, HttpResponse, HttpResponseNotFound
 import urllib.parse
 from django.core import serializers
 from cases import models
+from django.core.exceptions import ObjectDoesNotExist
+import json
 
-class AddVisit(TemplateView):
-    template_name='add-visit.html'
-
-    def get_context_data(self, **kwargs):
-        context=super().get_context_data(**kwargs)
-        context['locations']=Location.objects.all()
-        return context
+class AddVisit(View):
+    def get(self, *args, **kwargs):
+        try:
+            case = Case.objects.get(case_id=kwargs['case_id'])
+        except ObjectDoesNotExist:
+            return HttpResponseNotFound("Case doesn't exist.")
+        patient = case.patient
+        context = {
+            'case': case,
+            'patient': patient,
+        }
+        return render(self.request, 'add-visit.html', context)
 
 def getLocations(request):
     name=urllib.parse.unquote(request.GET.get('name'))
@@ -21,37 +28,30 @@ def getLocations(request):
     return HttpResponse(data, content_type='application/json')
 
 def addLocation(request):
-    name=request.POST.get('name')
-    address=request.POST.get('address')
-    x=float(request.POST.get('x'))
-    y=float(request.POST.get('y'))
-    obj=Location.objects.filter(name=name, x=x, y=y)
-    if(obj.exists()):
-        return JsonResponse({'status':0, 'pk': obj[0].pk})
+    obj, created = Location.objects.get_or_create(
+        name=request.POST.get('name'),
+        address=request.POST.get('address'),
+        x=float(request.POST.get('x')),
+        y=float(request.POST.get('y')),
+    )
+    if (created):
+        return JsonResponse({'status':1, 'pk': obj.pk})
     else:
-        newLocation=Location()
-        newLocation.name=name
-        newLocation.address=address
-        newLocation.x=x
-        newLocation.y=y
-        newLocation.save()
-        return JsonResponse({'status':1, 'pk': newLocation.pk})
+        return JsonResponse({'status':0, 'pk': obj.pk})
 
 def add(request):
-    newVisit=Visit()
-    try:
-        newVisit.case=Case.objects.get(case_id=request.POST.get('case_id'))
-    except Case.DoesNotExist:
-        return JsonResponse({'msg': 'Case not exists.'})
-    try:
-        newVisit.location=Location.objects.get(pk=request.POST.get('location_id'))
-    except:
-        return JsonResponse({'msg': 'Location not exists.'})
-    newVisit.date_from=request.POST.get('date_from')
-    newVisit.date_to=request.POST.get('date_to')
-    newVisit.category=request.POST.get('category')
-    newVisit.save()
-    return JsonResponse({'msg': 'Visit added.'})
+    locations=request.POST.getlist('locations[]')
+    case=Case.objects.get(case_id=request.POST.get('case_id'))
+    for i in range(0,len(locations)):
+        data=json.loads(locations[i])
+        newVisit=Visit()
+        newVisit.case=case
+        newVisit.location=Location.objects.get(pk=data['location_id'])
+        newVisit.date_from=data['date_from']
+        newVisit.date_to=data['date_to']
+        newVisit.category=data['category']
+        newVisit.save()
+    return JsonResponse({'msg': 'Visits added.'})
 
 # class Root(TemplateView):
 #     template_name = "add-visit.html"
@@ -145,6 +145,8 @@ class ViewVisits(TemplateView):
         self.get_display_data()
         self.get_render_entry()
 
-        context["search_result"] = self.search_result
-        
-        return context
+    
+  
+
+def view_visits(request, case_id):
+    return HttpResponse(case_id)
