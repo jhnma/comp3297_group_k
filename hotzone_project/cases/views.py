@@ -2,6 +2,8 @@ from django.shortcuts import render
 from django.views.generic import View, TemplateView
 from cases.models import Case, Location, Visit, Patient, Virus
 from django.http import JsonResponse, HttpResponse, HttpResponseNotFound
+from django.db.models import DateField
+from django.db.models.functions import Trunc
 import urllib.parse
 from django.core import serializers
 from cases import models
@@ -72,16 +74,12 @@ class Root(TemplateView):
         else:
             self.cases = models.Case.objects.filter(case_id__contains=self.search_request).extra( select={'int': 'CAST(case_id AS INTEGER)'}).order_by('int')
         #print(self.cases)
-            
-
 
     def get_display_data(self):
         length_of_db = (len(self.cases))
         # required as we will have many data
         # we need to show all cases , that means we need to set limit for init display
-        self.length = length_of_db if length_of_db<50 else 50
-   
-    
+        self.length = length_of_db if length_of_db<50 else 50    
 
     def get_render_entry(self):
         # todo -- period and button
@@ -107,46 +105,31 @@ class Root(TemplateView):
         return context
 
 class ViewVisits(TemplateView):
-    template_name = "cases.html"
+    template_name = "case-visits.html"
 
     def __init__(self):
-        self.INFECTED_TYPE = {"l":"local","i":"imported"}
-
-    def get_search_result(self):
-        
-        if self.search_request == "" or self.search_request==None :
-            self.cases = models.Case.objects.filter().extra( select={'int': 'CAST(case_id AS INTEGER)'}).order_by('int')
-        else:
-            self.cases = models.Case.objects.filter(case_id__contains=self.search_request).extra( select={'int': 'CAST(case_id AS INTEGER)'}).order_by('int')
-        #print(self.cases)
-
-    def get_display_data(self):
-        length_of_db = (len(self.cases))
-        # required as we will have many data
-        # we need to show all cases , that means we need to set limit for init display
-        self.length = length_of_db if length_of_db<50 else 50
-
-    def get_render_entry(self):
-        # todo -- period and button
-        self.search_result = []
-        for i in self.cases[:self.length]:
-            self.search_result.append({"id":i.case_id,
-                                "name":i.patient,
-                                "virus":i.virus,
-                                "date":i.date.strftime("%Y-%m-%d"),
-                                "category":self.INFECTED_TYPE[i.category]})
+        self.VISIT_TYPE = {'r': 'residence', 'w': 'workplace', 'v': 'visit'}
        
     def get_context_data(self, **kwargs):
-        self.search_request = self.request.GET.get("case")
+        # self.search_request = self.request.GET.get("visit")
 
         context = super().get_context_data(**kwargs)
+        self.visits = models.Visit.objects.filter(case_id=kwargs['case_id'])
+        name = models.Case.objects.filter(case_id=kwargs['case_id'])[0].patient
+        # .order_by(Trunc('date_to', 'date', output_field=DateField()).desc())
 
-        self.get_search_result()
-        self.get_display_data()
-        self.get_render_entry()
+        self.search_result = []
+        for visit in self.visits:
+            self.search_result.append({"location":visit.location,
+                                "datefrom":visit.date_from.strftime("%Y-%m-%d"),
+                                "dateto":visit.date_to.strftime("%Y-%m-%d"),
+                                "category":self.VISIT_TYPE[visit.category]})
 
-    
-  
+        # "datefrom":visit.date_from.strftime("%Y-%m-%d"),
+        # "dateto":visit.date_to.strftime("%Y-%m-%d")
 
-def view_visits(request, case_id):
-    return HttpResponse(case_id)
+        context["visits"] = self.search_result
+        context['case_id'] = kwargs['case_id']
+        context['pname'] = name
+
+        return context
