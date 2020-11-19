@@ -4,12 +4,13 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-        <title>Case {{ case_id }} - Add Visits</title>
+        <title>Case {{ case.case_id }} - Add Visits</title>
         <style>
             body {
                 margin: auto;
                 max-width: 1200px;
                 padding-left: 10px;
+                padding-bottom: 15px;
             }
 
             [class*="col-"] {
@@ -41,8 +42,6 @@
                 var currentGeodata
                 var currentHotzone
                 var addedVisitsID=0
-                //Changed to 2 classes for the new table & table title
-                $('.hotzoneLocations, .geodataLocations, #addedVisits').hide()
                 var today=new Date();
                 $('#date_from').val(today.toISOString().substr(0, 10))
                 $('#date_to').val(today.toISOString().substr(0, 10))
@@ -87,78 +86,24 @@
                     $('#addedVisits').hide()
                     $('#addedVisits tbody').empty()
                 }
-                function set(data, from) {
+                function addvisit(data, from, pk) {
                     if(from=='hotzone') {
-                        $("#x_coord").html(data.fields.x)
-                        $("#y_coord").html(data.fields.y)
-                        $("#address").html(data.fields.address)
-                        $("#location").val(data.fields.name)
-                        $("#visit").attr('data-pk', data.pk)
+                        var x = data.fields.x;
+                        var y = data.fields.y;
+                        var address = data.fields.address;
+                        var name = data.fields.name;
                     }
                     else {
-                        $("#x_coord").html(data.x)
-                        $("#y_coord").html(data.y)
-                        $("#address").html(data.addressEN)
-                        $("#location").val(data.nameEN)
-                        $("#visit").attr('data-pk', data.pk)
-                    }
-                }
-                function filterAddedLocations() {
-                    var newCurrentGeoData=[]
-                    if(currentHotzone.length>0) {
-                        currentGeodata.forEach((ele, idx, arr) => {
-                            var repeated=false
-                            for(var i=0;i<currentHotzone.length;i++) {
-                                if(ele.nameEN==currentHotzone[i].fields.name && ele.x==currentHotzone[i].fields.x && ele.y==currentHotzone[i].fields.y && ele.addressEN==currentHotzone[i].fields.address) {
-                                    repeated=true
-                                    break
-                                }
-                            }
-                            if(!repeated) {
-                                newCurrentGeoData.push(ele)
-                            }
-                        })
-                        currentGeodata=newCurrentGeoData
-                    }
-                }
-                //current changed to currentHotzone/currentGeodata
-                $(document).on('click','.hotzone',function() {
-                    set(currentHotzone[parseInt($(this).attr('data-idx'))], 'hotzone')
-                })
-                $(document).on('click','.geodata',function() {
-                    idx=parseInt($(this).attr('data-idx'))
-                    obj={
-                        name: currentGeodata[idx].nameEN,
-                        address: currentGeodata[idx].addressEN,
-                        x: parseFloat(currentGeodata[idx].x),
-                        y: parseFloat(currentGeodata[idx].y),
-                        csrfmiddlewaretoken: '{{ csrf_token }}'
-                    }
-                    $.post('{% url "add-location" %}', obj, function(data) {
-                        $('#visit').attr('data-pk',data.pk)
-                        set(currentGeodata[idx], 'geodata')
-                        if(data.status==1) {
-                            alert("Location added to HotZone.")
-                        }
-                        else {
-                            alert("Location in HotZone already.")
-                        }
-                    }, 'json')
-                })
-                $(document).on('click', '.remove', function() {
-                    $(`[data-visitID=${$(this).attr('data-id')}]`).remove()
-                })
-                $('#addVisit').click(function() {
-                    //case_id is now a hidden input, so wont check
-                    if($('#x_coord').html()=='') {
-                        alert('Please input complete data.')
-                        return
+                        var x = data.x;
+                        var y = data.y;
+                        var address = data.addressEN;
+                        var name = data.nameEN;
                     }
                     $('#addedVisits').show()
                     $('.addedVisits tbody').append(
-                        `<tr class="mb-2" data-visitID=${addedVisitsID} data-pk=${$('#visit').attr('data-pk')}>
-                            <td colspan=4 class='addedVisits_location'>${$('#location').val()}</td>
-                            <td colspan=5 class='addedVisits_address'>${$('#address').text()}</td>
+                        `<tr class="mb-2" data-visitID=${addedVisitsID} data-pk=${pk}>
+                            <td colspan=4 class='addedVisits_location'>${name}</td>
+                            <td colspan=5 class='addedVisits_address'>${address}</td>
                             <td colspan=3>
                                 <input type='date' class='addedVisits_date_from'/>
                             </td>
@@ -180,6 +125,59 @@
                     $(qSel+'.addedVisits_date_from').val($('#date_from').val())     
                     $(qSel+'.addedVisits_date_to').val($('#date_to').val()) 
                     addedVisitsID++
+                }
+                function filterAddedLocations() {
+                    var newCurrentGeoData=[]
+                    if(currentHotzone.length>0) {
+                        currentGeodata.forEach((ele, idx, arr) => {
+                            var repeated=false
+                            for(var i=0;i<currentHotzone.length;i++) {
+                                if(ele.nameEN==currentHotzone[i].fields.name && ele.x==currentHotzone[i].fields.x && ele.y==currentHotzone[i].fields.y && ele.addressEN==currentHotzone[i].fields.address) {
+                                    repeated=true
+                                    break
+                                }
+                            }
+                            if(!repeated) {
+                                newCurrentGeoData.push(ele)
+                            }
+                        })
+                        currentGeodata=newCurrentGeoData
+                    }
+                }
+                $(document).on('click','.hotzone',function() {
+                    let targetData = currentHotzone[parseInt($(this).attr('data-idx'))];
+                    addvisit(targetData, 'hotzone', targetData.pk);
+                    $('body').animate({
+                        scrollTop: $('#addedVisits').offset().top
+                    }, 600, function () {
+                    });
+                })
+                $(document).on('click','.geodata',function() {
+                    idx=parseInt($(this).attr('data-idx'))
+                    obj={
+                        name: currentGeodata[idx].nameEN,
+                        address: currentGeodata[idx].addressEN,
+                        x: parseFloat(currentGeodata[idx].x),
+                        y: parseFloat(currentGeodata[idx].y),
+                        csrfmiddlewaretoken: '{{ csrf_token }}'
+                    }
+                    $.post('{% url "add-location" %}', obj, function(data) {
+                        addvisit(currentGeodata[idx], 'geodata', data.pk)
+                        if(data.status==1) {
+                            alert("Location added to HotZone.")
+                        }
+                        else {
+                            alert("Location in HotZone already.")
+                        }
+                        $('body').animate({
+                            scrollTop: $('#addedVisits').offset().top
+                        }, 600, function () {
+                        });
+                    }, 'json')
+
+                })
+                $(document).on('click', '.remove', function() {
+                    $(`[data-visitID=${$(this).attr('data-id')}]`).remove()
                 })
                 $('#save').click(function() {
                     if($('#addedVisits tbody').children().length==0) {
@@ -199,13 +197,13 @@
                         }
                         visits['locations[]'].push(JSON.stringify(visit))
                     })
-                    console.log(visits)
                     $.post('{% url "add" %}', visits, function(data) {
                         alert(data.msg)
                         resetAddedVisits()
                     }, 'json')
                 })
-                $('#search').click(function() {
+                $('#search').click(function(e) {
+                    e.preventDefault();
                     if($("#location").val()!='') {
                         $('#search').text("Searching")
                         $.get('{% url "get-locations" %}',{name: $("#location").val()}, function(data) {
@@ -265,27 +263,18 @@
         </script>
     </head>
     <body>
-        <h3>Add Visit for Case {{ case_id }}</h3>
-        <input type='hidden' id='case_id' value="{{ case_id }}"/>
+        <h3>Add Visit for Case {{ case.case_id }}</h3>
+        <h5>{{ case.get_category_display|title }} case, confirmed on {{ case.date|date:"d-m-Y" }}</h5>
+        <input type='hidden' id='case_id' value="{{ case.case_id }}"/>
         <form class="container-fluid mt-4" id="visit" data-pk=''>
             <div class="row container">
                 <div class="col-6">
                     <div class="row">
                         <div class='col-3'>
-                            Patient Name
+                            Patient
                         </div>
                         <div class='col-8'>
-                            {{ patient_name }}
-                        </div>
-                    </div>
-                </div>
-                <div class="col-6">
-                    <div class="row">
-                        <div class='col-3'>
-                            X Coord
-                        </div>
-                        <div class='col-8'>
-                            <span id="x_coord"></span>
+                            {{ patient.firstname }} {{ patient.lastname }}, ID: {{ patient.idn }}
                         </div>
                     </div>
                 </div>
@@ -302,16 +291,6 @@
                                 <option value='w'>Workplace</option>
                                 <option value='v'>Visit</option>
                             </select>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-6">
-                    <div class="row">
-                        <div class='col-3'>
-                            Y Coord
-                        </div>
-                        <div class='col-8'>
-                            <span id="y_coord"></span>
                         </div>
                     </div>
                 </div>
@@ -335,16 +314,6 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-6">
-                    <div class="row">
-                        <div class='col-3'>
-                                Address
-                        </div>
-                        <div class='col-8'>
-                            <span id='address'></span>
-                        </div>
-                    </div>
-                </div>
             </div>
             <div class="row container mt-3">
                 <div class="col-9">
@@ -356,18 +325,15 @@
                             <input type='text' id='location' class="form-control" placeholder="Keep empty to list all existing Locations"/>
                         </div>
                         <div class='col-5'>
-                            <button type="button" id='search' class="ml-3 btn btn-primary">Search</button>
+                            <button type="submit" id='search' class="ml-3 btn btn-primary">Search</button>
                         </div>
                     </div>
                 </div>
-                <div class="col-3">
-                    <button type='button' id='addVisit' class='col-10 btn btn-primary'>Add Visit Record</button>
-                </div>
             </div>
         </form>
-        <div class="pl-0 pr-0 container-fluid hotzoneLocations">Location(s) from existing HotZone Database satisfying your query</div>
+        <div class="pl-0 pr-0 container-fluid hotzoneLocations" style="display: none;">Location(s) from existing HotZone Database satisfying your query</div>
         <div class='pl-0 pr-0 mt-1 container-fluid scroll-y-vh-40'>
-            <table class='container-fluid hotzoneLocations'>
+            <table class='container-fluid hotzoneLocations' style="display: none;">
                 <colgroup>
                     <col width="5%"><col width="5%">
                     <col width="5%"><col width="5%">
@@ -390,9 +356,9 @@
                 <tbody></tbody>
             </table>
         </div>
-        <div class="pl-0 pr-0 mt-3 container-fluid geodataLocations">Location(s) from GeoData Database satisfying your query</div>
+        <div class="pl-0 pr-0 mt-3 container-fluid geodataLocations" style="display: none;">Location(s) from GeoData Database satisfying your query</div>
         <div class='pl-0 pr-0 mt-1 container-fluid scroll-y-vh-40'>
-            <table class='container-fluid geodataLocations'>
+            <table class='container-fluid geodataLocations' style="display: none;">
                 <colgroup>
                     <col width="5%"><col width="5%">
                     <col width="5%"><col width="5%">
@@ -415,7 +381,7 @@
                 <tbody></tbody>
             </table>
         </div>
-        <div id="addedVisits">
+        <div id="addedVisits" style="display: none;">
             <div class="pl-0 pr-0 mt-3 container-fluid">Added Visits</div>
             <div class='pl-0 pr-0 mt-1 container-fluid scroll-y-vh-40'>
                 <table class='container-fluid addedVisits'>
@@ -442,7 +408,7 @@
                     <tbody></tbody>
                 </table>
             </div>
-            <button type="button" id="save" class="btn btn-primary float-right mt-4">Save</button>
+            <button type="button" id="save" class="btn btn-primary float-right mt-4 mb-4">Save</button>
         </div>
     </body>
 </html>
