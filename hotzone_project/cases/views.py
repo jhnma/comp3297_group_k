@@ -58,11 +58,10 @@ def add(request):
 #     def get_context_data(self, **kwargs):
 #         context = super().get_context_data(**kwargs)
 #         return context
- 
+
 class Root(TemplateView):
-    
     template_name = "cases.html"
-    
+
     def __init__(self):
         self.INFECTED_TYPE = {"l":"local","i":"imported"}
 
@@ -74,7 +73,7 @@ class Root(TemplateView):
             self.cases = models.Case.objects.filter(case_id__contains=self.search_request).extra( select={'int': 'CAST(case_id AS INTEGER)'}).order_by('int')
         print(self.cases)
             
-           
+
 
     def get_display_data(self):
         length_of_db = (len(self.cases))
@@ -95,7 +94,7 @@ class Root(TemplateView):
                                 "category":self.INFECTED_TYPE[i.category]})
        
     def get_context_data(self, **kwargs):
-        self.search_request = self.request.GET.get("name")
+        self.search_request = self.request.GET.get("case")
 
         context = super().get_context_data(**kwargs)
 
