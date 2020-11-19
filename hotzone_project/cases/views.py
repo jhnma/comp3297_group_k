@@ -71,7 +71,7 @@ class Root(TemplateView):
             self.cases = models.Case.objects.filter().extra( select={'int': 'CAST(case_id AS INTEGER)'}).order_by('int')
         else:
             self.cases = models.Case.objects.filter(case_id__contains=self.search_request).extra( select={'int': 'CAST(case_id AS INTEGER)'}).order_by('int')
-        print(self.cases)
+        #print(self.cases)
             
 
 
