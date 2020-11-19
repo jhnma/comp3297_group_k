@@ -106,22 +106,45 @@ class Root(TemplateView):
         
         return context
 
+class ViewVisits(TemplateView):
+    template_name = "cases.html"
 
+    def __init__(self):
+        self.INFECTED_TYPE = {"l":"local","i":"imported"}
 
+    def get_search_result(self):
+        
+        if self.search_request == "" or self.search_request==None :
+            self.cases = models.Case.objects.filter().extra( select={'int': 'CAST(case_id AS INTEGER)'}).order_by('int')
+        else:
+            self.cases = models.Case.objects.filter(case_id__contains=self.search_request).extra( select={'int': 'CAST(case_id AS INTEGER)'}).order_by('int')
+        #print(self.cases)
 
+    def get_display_data(self):
+        length_of_db = (len(self.cases))
+        # required as we will have many data
+        # we need to show all cases , that means we need to set limit for init display
+        self.length = length_of_db if length_of_db<50 else 50
 
-   
+    def get_render_entry(self):
+        # todo -- period and button
+        self.search_result = []
+        for i in self.cases[:self.length]:
+            self.search_result.append({"id":i.case_id,
+                                "name":i.patient,
+                                "virus":i.virus,
+                                "date":i.date.strftime("%Y-%m-%d"),
+                                "category":self.INFECTED_TYPE[i.category]})
+       
+    def get_context_data(self, **kwargs):
+        self.search_request = self.request.GET.get("case")
 
-  
-    
+        context = super().get_context_data(**kwargs)
 
-  
-   
-    
-    
+        self.get_search_result()
+        self.get_display_data()
+        self.get_render_entry()
 
-    
-  
-
-def view_visits(request):
-    return HttpResponse("123123")
+        context["search_result"] = self.search_result
+        
+        return context
