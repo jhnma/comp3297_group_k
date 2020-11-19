@@ -28,11 +28,7 @@ class StaffManager(BaseUserManager):
             username = username,
             password = password
         )
-
-        user.is_admin = True
-        user.is_active = True
-        user.is_staff = True
-        user.is_superuser = True
+        user.superuser = True
 
         user.save(using=self._db)
         return user
@@ -40,7 +36,7 @@ class StaffManager(BaseUserManager):
 class Staff(AbstractBaseUser):
     staff_number = models.CharField(max_length=7, validators=[MinLengthValidator(7)], unique=True)
 
-    username=models.CharField(max_length=50, unique=True)
+    username = models.CharField(max_length=50, unique=True)
     password = models.CharField(max_length=50)
 
     first_name=models.CharField(max_length=100)
@@ -50,21 +46,36 @@ class Staff(AbstractBaseUser):
 
     date_joined = models.DateTimeField(verbose_name='date_joined', auto_now_add=True)
     last_login = models.DateTimeField(verbose_name='last_login', auto_now=True)
-    is_admin = models.BooleanField(default=True)
-    is_active = models.BooleanField(default=True)
-    is_staff = models.BooleanField(default=True)
-    is_superuser = models.BooleanField(default=False)
+    admin = models.BooleanField(default=True)
+    active = models.BooleanField(default=True)
+    staff = models.BooleanField(default=True)
+    superuser = models.BooleanField(default=False)
 
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['password', 'staff_number']
 
     objects = StaffManager()
 
+    @property
     def __str__(self):
         return self.username
 
+    @property
     def has_perm(self, perm, obj=None):
         return self.is_admin
 
+    @property
     def has_module_perms(self, app_label):
         return True
+
+    @property
+    def is_staff(self):
+        return self.staff
+
+    @property
+    def is_admin(self):
+        return self.admin
+
+    @property
+    def is_active(self):
+        return self.active
