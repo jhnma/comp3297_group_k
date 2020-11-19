@@ -10,6 +10,7 @@
                 margin: auto;
                 max-width: 1200px;
                 padding-left: 10px;
+                padding-bottom: 15px;
             }
 
             [class*="col-"] {
@@ -87,60 +88,24 @@
                     $('#addedVisits').hide()
                     $('#addedVisits tbody').empty()
                 }
-                function set(data, from) {
+                function addvisit(data, from, pk) {
                     if(from=='hotzone') {
-                        $("#x_coord").html(data.fields.x)
-                        $("#y_coord").html(data.fields.y)
-                        $("#address").html(data.fields.address)
-                        $("#location").val(data.fields.name)
-                        $("#visit").attr('data-pk', data.pk)
+                        var x = data.fields.x;
+                        var y = data.fields.y;
+                        var address = data.fields.address;
+                        var name = data.fields.name;
                     }
                     else {
-                        $("#x_coord").html(data.x)
-                        $("#y_coord").html(data.y)
-                        $("#address").html(data.addressEN)
-                        $("#location").val(data.nameEN)
-                        $("#visit").attr('data-pk', data.pk)
-                    }
-                }
-                //current changed to currentHotzone/currentGeodata
-                $(document).on('click','.hotzone',function() {
-                    set(currentHotzone[parseInt($(this).attr('data-idx'))], 'hotzone')
-                })
-                $(document).on('click','.geodata',function() {
-                    idx=parseInt($(this).attr('data-idx'))
-                    obj={
-                        name: currentGeodata[idx].nameEN,
-                        address: currentGeodata[idx].addressEN,
-                        x: parseFloat(currentGeodata[idx].x),
-                        y: parseFloat(currentGeodata[idx].y),
-                        csrfmiddlewaretoken: '{{ csrf_token }}'
-                    }
-                    $.post('{% url "add-location" %}', obj, function(data) {
-                        $('#visit').attr('data-pk',data.pk)
-                        set(currentGeodata[idx], 'geodata')
-                        if(data.status==1) {
-                            alert("Location added to HotZone.")
-                        }
-                        else {
-                            alert("Location in HotZone already.")
-                        }
-                    }, 'json')
-                })
-                $(document).on('click', '.remove', function() {
-                    $(`[data-visitID=${$(this).attr('data-id')}]`).remove()
-                })
-                $('#addVisit').click(function() {
-                    //case_id is now a hidden input, so wont check
-                    if($('#x_coord').html()=='') {
-                        alert('Please input complete data.')
-                        return
+                        var x = data.x;
+                        var y = data.y;
+                        var address = data.addressEN;
+                        var name = data.nameEN;
                     }
                     $('#addedVisits').show()
                     $('.addedVisits tbody').append(
-                        `<tr class="mb-2" data-visitID=${addedVisitsID} data-pk=${$('#visit').attr('data-pk')}>
-                            <td colspan=4 class='addedVisits_location'>${$('#location').val()}</td>
-                            <td colspan=5 class='addedVisits_address'>${$('#address').text()}</td>
+                        `<tr class="mb-2" data-visitID=${addedVisitsID} data-pk=${pk}>
+                            <td colspan=4 class='addedVisits_location'>${name}</td>
+                            <td colspan=5 class='addedVisits_address'>${address}</td>
                             <td colspan=3>
                                 <input type='date' class='addedVisits_date_from'/>
                             </td>
@@ -162,6 +127,34 @@
                     $(qSel+'.addedVisits_date_from').val($('#date_from').val())     
                     $(qSel+'.addedVisits_date_to').val($('#date_to').val()) 
                     addedVisitsID++
+                }
+                //current changed to currentHotzone/currentGeodata
+                $(document).on('click','.hotzone',function() {
+                    let targetData = currentHotzone[parseInt($(this).attr('data-idx'))];
+                    addvisit(targetData, 'hotzone', targetData.pk);
+                })
+                $(document).on('click','.geodata',function() {
+                    idx=parseInt($(this).attr('data-idx'))
+                    obj={
+                        name: currentGeodata[idx].nameEN,
+                        address: currentGeodata[idx].addressEN,
+                        x: parseFloat(currentGeodata[idx].x),
+                        y: parseFloat(currentGeodata[idx].y),
+                        csrfmiddlewaretoken: '{{ csrf_token }}'
+                    }
+                    $.post('{% url "add-location" %}', obj, function(data) {
+                        addvisit(currentGeodata[idx], 'geodata', data.pk)
+                        if(data.status==1) {
+                            alert("Location added to HotZone.")
+                        }
+                        else {
+                            alert("Location in HotZone already.")
+                        }
+                    }, 'json')
+
+                })
+                $(document).on('click', '.remove', function() {
+                    $(`[data-visitID=${$(this).attr('data-id')}]`).remove()
                 })
                 $('#save').click(function() {
                     if($('#addedVisits tbody').children().length==0) {
@@ -181,7 +174,6 @@
                         }
                         visits['locations[]'].push(JSON.stringify(visit))
                     })
-                    console.log(visits)
                     $.post('{% url "add" %}', visits, function(data) {
                         alert(data.msg)
                         resetAddedVisits()
@@ -262,16 +254,6 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-6">
-                    <div class="row">
-                        <div class='col-3'>
-                            X Coord
-                        </div>
-                        <div class='col-8'>
-                            <span id="x_coord"></span>
-                        </div>
-                    </div>
-                </div>
             </div>
             <div class="row container mt-3">
                 <div class="col-6">
@@ -285,16 +267,6 @@
                                 <option value='w'>Workplace</option>
                                 <option value='v'>Visit</option>
                             </select>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-6">
-                    <div class="row">
-                        <div class='col-3'>
-                            Y Coord
-                        </div>
-                        <div class='col-8'>
-                            <span id="y_coord"></span>
                         </div>
                     </div>
                 </div>
@@ -318,16 +290,6 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-6">
-                    <div class="row">
-                        <div class='col-3'>
-                                Address
-                        </div>
-                        <div class='col-8'>
-                            <span id='address'></span>
-                        </div>
-                    </div>
-                </div>
             </div>
             <div class="row container mt-3">
                 <div class="col-9">
@@ -342,9 +304,6 @@
                             <button type="button" id='search' class="ml-3 btn btn-primary">Search</button>
                         </div>
                     </div>
-                </div>
-                <div class="col-3">
-                    <button type='button' id='addVisit' class='col-10 btn btn-primary'>Add Visit Record</button>
                 </div>
             </div>
         </form>
@@ -425,7 +384,7 @@
                     <tbody></tbody>
                 </table>
             </div>
-            <button type="button" id="save" class="btn btn-primary float-right mt-4">Save</button>
+            <button type="button" id="save" class="btn btn-primary float-right mt-4 mb-4">Save</button>
         </div>
     </body>
 </html>
