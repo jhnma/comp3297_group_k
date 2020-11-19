@@ -126,6 +126,24 @@
                     $(qSel+'.addedVisits_date_to').val($('#date_to').val()) 
                     addedVisitsID++
                 }
+                function filterAddedLocations() {
+                    var newCurrentGeoData=[]
+                    if(currentHotzone.length>0) {
+                        currentGeodata.forEach((ele, idx, arr) => {
+                            var repeated=false
+                            for(var i=0;i<currentHotzone.length;i++) {
+                                if(ele.nameEN==currentHotzone[i].fields.name && ele.x==currentHotzone[i].fields.x && ele.y==currentHotzone[i].fields.y && ele.addressEN==currentHotzone[i].fields.address) {
+                                    repeated=true
+                                    break
+                                }
+                            }
+                            if(!repeated) {
+                                newCurrentGeoData.push(ele)
+                            }
+                        })
+                        currentGeodata=newCurrentGeoData
+                    }
+                }
                 $(document).on('click','.hotzone',function() {
                     let targetData = currentHotzone[parseInt($(this).attr('data-idx'))];
                     addvisit(targetData, 'hotzone', targetData.pk);
@@ -198,32 +216,32 @@
                                 reset()
                                 $('.hotzoneLocations').hide()
                             }
-                        },'json')
-
-                        $.ajax({
-                            url: 'https://geodata.gov.hk/gs/api/v1.0.0/locationSearch',
-                            type: 'GET',
-                            data: {q: $("#location").val()},
-                            success: function(data) {
-                                $('#search').text("Search")
-                                currentGeodata=data
-                                if(data.length>=1) {
-                                    reset()
-                                    renderLocations('geodata', data)
-                                }
-                                else {
+                            $.ajax({
+                                url: 'https://geodata.gov.hk/gs/api/v1.0.0/locationSearch',
+                                type: 'GET',
+                                data: {q: $("#location").val()},
+                                success: function(d) {
+                                    $('#search').text("Search")
+                                    currentGeodata=d
+                                    if(d.length>=1) {
+                                        reset()
+                                        filterAddedLocations()
+                                        renderLocations('geodata', currentGeodata)
+                                    }
+                                    else {
+                                        reset()
+                                        $('.geodataLocations').hide()
+                                        alert("No record in GeoData Store.")
+                                    }
+                                },
+                                error: function(d) {
+                                    $('#search').text("Search")
                                     reset()
                                     $('.geodataLocations').hide()
                                     alert("No record in GeoData Store.")
                                 }
-                            },
-                            error: function(data) {
-                                $('#search').text("Search")
-                                reset()
-                                $('.geodataLocations').hide()
-                                alert("No record in GeoData Store.")
-                            }
-                        })
+                            })
+                        },'json')
                     }
                     else {
                         $('.geodataLocations').hide()
