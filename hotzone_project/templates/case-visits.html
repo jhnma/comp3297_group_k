@@ -4,18 +4,6 @@
 <h1 class="mb-3"> All Visits </h1>
 <h4> by Patient {{pname}} with Patient ID {{case_id}} </h4>
 
-<a class="btn btn-primary mt-4" href="/cases/{{case_id}}/add_visit"> Add Visit </a>
-
-{% comment %}
-<div>
-    <h6> Search / Filter Visit </h6>
-    <form class="form-inline mr-auto" method="get" action="">
-        <input class="form-control mr-sm-2" type="text" name="visit" placeholder="Search" aria-label="Search">
-        <button class="btn btn-primary btn-rounded btn-sm my-0" type="submit">Search</button>
-    </form>
-</div>
-{% endcomment %}
-
 {% if visits %}
 <h6 class="pt-5"> All results </h6>
 
@@ -37,12 +25,6 @@
                 <td scope="row">{{visit.datefrom}}</td>
                 <td scope="row">{{visit.dateto}}</td>
                 <td scope="row">{{visit.category}}</td>
-
-                {% comment %}
-                <td scope="row" class="bg-white border-0">
-                    <a class="btn btn-primary" style="width: 94px;" href="#"> Edit entry </a>
-                </td>
-                {% endcomment %}
             </tr>
         </tbody>
         {% endfor %}
