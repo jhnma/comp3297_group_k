@@ -37,7 +37,7 @@ class Staff(AbstractBaseUser):
     staff_number = models.CharField(max_length=7, validators=[MinLengthValidator(7)], unique=True)
 
     username = models.CharField(max_length=50, unique=True)
-    password = models.CharField(max_length=50)
+    password = models.CharField(max_length=100)
 
     first_name=models.CharField(max_length=100)
     last_name = models.CharField(max_length=50)
