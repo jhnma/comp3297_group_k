@@ -68,7 +68,7 @@ class Root(TemplateView):
         self.INFECTED_TYPE = {"l":"local","i":"imported"}
 
     def get_search_result(self):
-        
+
         if self.search_request == "" or self.search_request==None :
             self.cases = models.Case.objects.filter().extra( select={'int': 'CAST(case_id AS INTEGER)'}).order_by('int')
         else:
@@ -79,7 +79,7 @@ class Root(TemplateView):
         length_of_db = (len(self.cases))
         # required as we will have many data
         # we need to show all cases , that means we need to set limit for init display
-        self.length = length_of_db if length_of_db<50 else 50    
+        self.length = length_of_db if length_of_db<50 else 50
 
     def get_render_entry(self):
         # todo -- period and button
@@ -90,7 +90,7 @@ class Root(TemplateView):
                                 "virus":i.virus,
                                 "date":i.date.strftime("%Y-%m-%d"),
                                 "category":self.INFECTED_TYPE[i.category]})
-       
+
     def get_context_data(self, **kwargs):
         self.search_request = self.request.GET.get("case")
 
@@ -101,7 +101,7 @@ class Root(TemplateView):
         self.get_render_entry()
 
         context["search_result"] = self.search_result
-        
+
         return context
 
 class ViewVisits(TemplateView):
@@ -109,7 +109,7 @@ class ViewVisits(TemplateView):
 
     def __init__(self):
         self.VISIT_TYPE = {'r': 'residence', 'w': 'workplace', 'v': 'visit'}
-       
+
     def get_context_data(self, **kwargs):
         # self.search_request = self.request.GET.get("visit")
 
