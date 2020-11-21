@@ -4,17 +4,20 @@ from django.core.validators import MinLengthValidator
 
 # Create your models here.
 class StaffManager(BaseUserManager):
-    def create_user(self, staff_number, username, password):
+    def create_user(self, staff_number, username, password, email):
         if not username:
             raise ValueError("User must have an username.")
         if not password:
             raise ValueError("User must have a password.")
         if not staff_number:
             raise ValueError("User must have a staff_number.")
+        if not email:
+            raise ValueError("User must have an email.")
 
         user = self.model(
             username = username,
-            staff_number = staff_number
+            staff_number = staff_number,
+            email = email,
         )
 
         user.set_password(password)
@@ -22,11 +25,12 @@ class StaffManager(BaseUserManager):
         user.save(using=self._db)
         return user
     
-    def create_superuser(self, staff_number, username, password):
+    def create_superuser(self, staff_number, username, password, email):
         user = self.create_user(
             staff_number = staff_number,
             username = username,
-            password = password
+            password = password,
+            email = email,
         )
         user.superuser = True
 
@@ -52,7 +56,7 @@ class Staff(AbstractBaseUser):
     superuser = models.BooleanField(default=False)
 
     USERNAME_FIELD = 'username'
-    REQUIRED_FIELDS = ['password', 'staff_number']
+    REQUIRED_FIELDS = ['password', 'staff_number', 'email']
 
     objects = StaffManager()
 
