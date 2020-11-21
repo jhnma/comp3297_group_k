@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 from django.views.generic import TemplateView
 from cases.models import Case, Location, Visit, Patient, Virus
 from django.http import JsonResponse, HttpResponse
@@ -51,51 +51,3 @@ def add(request):
     newVisit.category=request.POST.get('category')
     newVisit.save()
     return JsonResponse({'msg': 'Visit added.'})
-
-class CaseView(TemplateView):
-    model=Visit
-    template_name='case.html'
-
-    def get(self, request, **kwargs):
-        currentUrl=self.request.get_full_path()
-        pos=currentUrl.find('cases/')+6
-        cid=currentUrl[pos:]
-        filtercase=Visit.objects.filter(case__case_id__exact=cid)
-        context={'filtercase': filtercase}
-        return render(request, self.template_name, context)
-
-def save(request):
-    if request.method == "GET":
-        caseid=request.GET['caseid']
-
-        model=Visit
-        counter=0
-        retrange=request.GET['locations'].count(',')
-        retrange+=1
-        removelist=[]
-        for i in Visit.objects.filter(case__case_id__exact=request.GET['oldcaseid']):
-            for j in range(retrange):
-                counter=0
-                if str(i.location.name)==request.GET['locations'].split(',')[j]:
-                    if str(i.location.address)==request.GET['addresses'].split(',')[j]:
-                        if str(i.location.x)==request.GET['xs'].split(',')[j]:
-                            if str(i.location.y)==request.GET['ys'].split(',')[j]:
-                                if str(i.date_from)==request.GET['dfroms'].split(',')[j].split("T")[0]:
-                                    if str(i.date_to)==request.GET['dtos'].split(',')[j].split("T")[0]:
-                                        if str(i.get_category_display())==request.GET['categories'].split(',')[j].lower():
-                                            counter=1
-                                            break
-
-            if counter==0:
-                removelist.append(i)
-        for i in removelist:
-            i.delete()
-
-        model=Case
-        Case.objects.filter(case_id__exact=request.GET['oldcaseid']).update(case_id=request.GET['caseid'], date=request.GET['confirmeddate'], category=request.GET['localimported'][0].lower())
-        model=Patient
-        Patient.objects.filter(case__case_id__exact=request.GET['oldcaseid']).update(lastname=request.GET['patientname'].split(' ')[0], firstname=request.GET['patientname'].split(' ')[1]+" "+request.GET['patientname'].split(' ')[2], idn=request.GET['IDN'], dob=request.GET['DoB'])
-        model=Virus
-        Virus.objects.filter(case__case_id__exact=request.GET['oldcaseid']).update(name=request.GET['virusname'], common_name=request.GET['commonname'], period=request.GET['MIP'])
-
-    return redirect('/cases/'+caseid)

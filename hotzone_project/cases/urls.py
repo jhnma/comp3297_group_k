@@ -5,7 +5,5 @@ urlpatterns=[
     path('<int:case_id>/add_visit', views.AddVisit.as_view(), name='add_visit'),
     path('get-locations', views.getLocations, name='get-locations'),
     path('add-location', views.addLocation, name='add-location'),
-    path('add', views.add, name='add'),
-    path('<int:case_id>', views.CaseView.as_view(), name='case'),
-    path('save', views.save, name="save")
+    path('add', views.add, name='add')
 ]
