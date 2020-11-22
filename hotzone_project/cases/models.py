@@ -25,9 +25,8 @@ class Case(models.Model):
         ('i', 'imported')
     )
     category=models.CharField(max_length=1, choices=TYPE)
-    # changed by wesley
     def __str__(self):
-        return f'{self.case_id},{self.patient},{self.virus},{self.date},{self.TYPE},{self.category}'
+        return f'{self.case_id},{self.patient},{self.virus},{self.date},{self.get_category_display()}'
         
 
 class Location(models.Model):
