@@ -115,7 +115,7 @@ class ViewVisits(TemplateView):
         # self.search_request = self.request.GET.get("visit")
 
         context = super().get_context_data(**kwargs)
-        self.visits = models.Visit.objects.filter(case_id=kwargs['case_id'])
+        self.visits = models.Visit.objects.filter(case__case_id__exact=kwargs['case_id'])
         name = models.Case.objects.filter(case_id=kwargs['case_id'])[0].patient
         # .order_by(Trunc('date_to', 'date', output_field=DateField()).desc())
 
