@@ -29,7 +29,7 @@
       }
 
       table {
-
+        table-layout:fixed;
         width: 100% !important;
         font-size: 16px;
       }
@@ -50,7 +50,7 @@
         padding: 5px;
         text-align: left;
         font-weight: normal;
-        width: 12.5%;
+        width: 10%;
       }
 
       #tbutton th {
@@ -78,74 +78,67 @@
   <body>
 
     <form style='display: table;
-    line-height: 3;'>
-      <p style='display:table-row'>
-        <label for="cid">Case ID</label>
-        <input type="text" id="cid" name="cid" value="{{filtercase.0.case.case_id}}">
-      </p>
-      <p style='display:table-row'>
-        <label for="cdate">Date Confirmed</label>
-        <input type="date" id="cdate" name="cdate" value="{{filtercase.0.case.date|date:'Y-m-d'}}">
-      </p>
-      <p style='display:table-row'>
-        <label for="loi">Local/Imported</label>
-        <input type="text" id="loi" name="loi" value="{{filtercase.0.case.get_category_display|title}}">
-      </p>
-      <p style='display:table-row'>
-        <label for="pname">Patient Name</label>
-        <input type="text" id="pname" name="pname" value="{{filtercase.0.case.patient.lastname}} {{filtercase.0.case.patient.firstname}}">
-      </p>
-      <p style='display:table-row'>
-        <label for="idn">Identity Document Number</label>
-        <input type="text" id="idn" name="idn" value="{{filtercase.0.case.patient.idn}}">
-      </p>
-      <p style='display:table-row'>
-        <label for="dob">Date of Birth</label>
-        <input type="date" id="dob" name="dob" value="{{filtercase.0.case.patient.dob|date:'Y-m-d'}}">
-      </p>
-      <p style='display:table-row'>
-        <label for="vname">Virus Name</label>
-        <input type="text" id="vname" name="vname" value="{{filtercase.0.case.virus.name}}">
-      </p>
-      <p style='display:table-row'>
-        <label for="disease">Disease</label>
-        <input type="text" id="disease" name="disease" value="{{filtercase.0.case.virus.common_name}}">
-      </p>
-      <p style='display:table-row'>
-        <label for="mip">Max Infected Period</label>
-        <input type="text" id="mip" name="mip" value="{{filtercase.0.case.virus.period}}">
-      </p>
+    line-height: 2;'>
+      <pre style='display:table-row'>Case ID                        {{filtercase.0.case_id}}</pre>
+      <pre style='display:table-row'>Date Confirmed                 {{filtercase.0.date|date:'Y-m-d'}}</pre>
+      <pre style='display:table-row'>Local/Imported                 {{filtercase.0.get_category_display|title}}</pre>
+      <pre style='display:table-row'>Patient Name                   {{filtercase.0.patient.lastname}} {{filtercase.0.patient.firstname}}</pre>
+      <pre style='display:table-row'>Identity Document Number       {{filtercase.0.patient.idn}}</pre>
+      <pre style='display:table-row'>Date of Birth                  {{filtercase.0.patient.dob|date:'Y-m-d'}}</pre>
+      <pre style='display:table-row'>Virus Name                     {{filtercase.0.virus.name}}</pre>
+      <pre style='display:table-row'>Disease                        {{filtercase.0.virus.common_name}}</pre>
+      <pre style='display:table-row'>Max Infected Period            {{filtercase.0.virus.period}}</pre>
+    </form>
+    <form action='{{filtercase.0.case_id}}/add_visit' method='GET'>
+      <pre>Visit(s)                       <button type='submit' class="btn btn-primary">Add Visit</button></pre>
     </form>
 
-    <form action='{{filtercase.0.case.case_id}}/add_visit' method='GET' style='margin:10'>
-      Visit(s)
-      <button type='submit' class="btn btn-primary"> Add Visit</button>
-    </form>
-
+    {% if filtervisit %}
     <table id="t01">
       <tr>
-        <th class="bg-primary">Location</th>
-        <th class="bg-primary">Address</th>
-        <th class="bg-primary">X Coord</th>
-        <th class="bg-primary">Y Coord</th>
-        <th class="bg-primary">Date From</th>
-        <th class="bg-primary">Date To</th>
-        <th class="bg-primary">Category</th>
-        <th style='background-color: #FFFFFF'></th>
+        <th style="width: 15%" class="bg-primary">Location</th>
+        <th style="width: 10%" class="bg-primary">Address</th>
+        <th style="width: 10%" class="bg-primary">X Coord</th>
+        <th style="width: 10%" class="bg-primary">Y Coord</th>
+        <th style="width: 15%" class="bg-primary">Date From</th>
+        <th style="width: 15%" class="bg-primary">Date To</th>
+        <th style="width: 10%" class="bg-primary">Category</th>
+        <th style="width: 15%" style='background-color: #FFFFFF'></th>
       </tr>
     </table>
 
-    <table id="t02">
-      {% for loc in filtercase %}
+    <table id="t02" class="fixed">
+
+      {% for loc in filtervisit %}
       <tr>
-        <th>{{loc.location.name}}</th>
-        <th>{{loc.location.address}}</th>
-        <th>{{loc.location.x}}</th>
-        <th>{{loc.location.y}}</th>
-        <th>{{loc.date_from}}</th>
-        <th>{{loc.date_to}}</th>
-        <th>{{loc.get_category_display|title}}</th>
+        <th style="width: 15%;
+        word-wrap: break-word;">{{loc.location.name}}</th>
+        <th style="width: 10%">{{loc.location.address}}</th>
+        <th style="width: 10%">{{loc.location.x}}</th>
+        <th style="width: 10%">{{loc.location.y}}</th>
+        <th style="width: 15%">
+          <input id="dfrom" type="date" name="dfrom[]" style="width: 100%;
+          height: 20px;
+          font-size: 0.6rem;" value="{{loc.date_from|date:'Y-m-d'}}"/>
+          <input id="odfrom" type="hidden" name="odfrom[]" value="{{loc.date_from|date:'Y-m-d'}}"/></th>
+        <th style="width: 15%">
+          <input id="dto" type="date" name="dto[]" style="width: 100%;
+          height: 20px;
+          font-size: 0.6rem;" value="{{loc.date_to|date:'Y-m-d'}}"/>
+          <input id="odto" type="hidden" name="odto[]" value="{{loc.date_to|date:'Y-m-d'}}"/></th>
+        <th style="width: 10%">
+          <select id="category" name="category[]" style="width: 100%;
+          height: 20px;
+          font-size: 0.6rem;">
+            <option value="{{loc.get_category_display|title}}" selected disabled hidden>{{loc.get_category_display|title}}</option>
+            <option value="residence">Residence</option>
+            <option value="workplace">Workplace</option>
+            <option value="visit">Visit</option>
+          </select>
+          <input id="ocategory" type="hidden" name="ocategory[]" value="{{loc.get_category_display|title}}"/>
+        </th>
         <th id="tbutton" style='background-color: #FFFFFF;
+        width: 15%;
         vertical-align: middle;
         text-align: center;'>
           <form style='margin: auto;
@@ -167,33 +160,27 @@
         <th id="tbutton" style='background-color: #FFFFFF;
         vertical-align: middle;
         text-align: center;'>
-          <form name="saveform" action="save" style='margin: auto;
-          display: inline-block;'>
-            <input id="oldcaseid" type="hidden" name="oldcaseid"/>
+          <form name="saveform" action="save">
             <input id="caseid" type="hidden" name="caseid"/>
-            <input id="confirmeddate" type="hidden" name="confirmeddate"/>
-            <input id="localimported" type="hidden" name="localimported"/>
-            <input id="patientname" type="hidden" name="patientname"/>
-            <input id="IDN" type="hidden" name="IDN"/>
-            <input id="DoB" type="hidden" name="DoB"/>
-            <input id="virusname" type="hidden" name="virusname"/>
-            <input id="commonname" type="hidden" name="commonname"/>
-            <input id="MIP" type="hidden" name="MIP"/>
             <input id="locations" type="hidden" name="locations"/>
             <input id="addresses" type="hidden" name="addresses"/>
             <input id="xs" type="hidden" name="xs"/>
             <input id="ys" type="hidden" name="ys"/>
-            <input id="dfroms" type="hidden" name="dfroms"/>
-            <input id="dtos" type="hidden" name="dtos"/>
-            <input id="categories" type="hidden" name="categories"/>
+            <input id="olddfroms" type="hidden" name="olddfroms"/>
+            <input id="olddtos" type="hidden" name="olddtos"/>
+            <input id="oldcategories" type="hidden" name="oldcategories"/>
+            <input id="newdfroms" type="hidden" name="newdfroms"/>
+            <input id="newdtos" type="hidden" name="newdtos"/>
+            <input id="newcategories" type="hidden" name="newcategories"/>
+            <input id="row_number" type="hidden" name="row_number"/>
             <a href="javascript: save()" class="btn btn-primary">Save</a>
           </form>
         </th>
       </tr>
     </table>
+    {% endif %}
 
     <script>
-
       function remove(r) {
         var i = r.parentNode.parentNode.parentNode.rowIndex;
         document.getElementById("t02").deleteRow(i);
@@ -201,31 +188,18 @@
     </script>
 
     <script type="text/javascript">
-
       function save() {
         var row_number=document.getElementById("t02").rows.length-1;
-        var caseid=document.getElementById("cid").value;
-        var confirmeddate=document.getElementById("cdate").value;
-        var localimported=document.getElementById("loi").value;
-        var patientname=document.getElementById("pname").value;
-        var idn=document.getElementById("idn").value;
-        var dob=document.getElementById("dob").value;
-        var virusname=document.getElementById("vname").value;
-        var disease=document.getElementById("disease").value;
-        var mip=document.getElementById("mip").value;
+        if (row_number==-1){
+          document.getElementById("row_number").value=0;
+        }
+        else{
+          document.getElementById("row_number").value=row_number;
+        }
         var url=window.location.href;
         var pos=url.search('cases/')+6;
-        var oldid=url.substring(pos,);
-        document.getElementById("oldcaseid").value=oldid;
-        document.getElementById("caseid").value=caseid;
-        document.getElementById("confirmeddate").value=confirmeddate;
-        document.getElementById("localimported").value=localimported;
-        document.getElementById("patientname").value=patientname;
-        document.getElementById("IDN").value=idn;
-        document.getElementById("DoB").value=dob;
-        document.getElementById("virusname").value=virusname;
-        document.getElementById("commonname").value=disease;
-        document.getElementById("MIP").value=mip;
+        var caseid=url.substring(pos,);
+        document.getElementById('caseid').value=caseid;
 
         var table=document.getElementById("t02");
         var i;
@@ -234,9 +208,12 @@
         var aaddresses=[];
         var axs=[];
         var ays=[];
-        var adfroms=[];
-        var adtos=[];
-        var acategories=[];
+        var aodfroms=[];
+        var aodtos=[];
+        var aocategories=[];
+        var andfroms=[];
+        var andtos=[];
+        var ancategories=[];
 
         for (i=0; i<row_number; i++){
           if (table.rows[i].cells[0].innerHTML==""){
@@ -268,44 +245,64 @@
           }
 
           if (table.rows[i].cells[4].innerHTML==""){
-            adfroms.push(empty);
+            aodfroms.push(empty);
+            andfroms.push(empty);
           }
           else {
-            var date=new Date(table.rows[i].cells[4].innerHTML);
-            date.setHours(8);
-            var isodate=date.toISOString();
-            adfroms.push(isodate);
+            var input=document.getElementsByName('dfrom[]');
+            var date=input[i];
+            var value=date.value;
+            andfroms.push(value);
+            input=document.getElementsByName('odfrom[]');
+            date=input[i];
+            value=date.value;
+            aodfroms.push(value);
           }
 
           if (table.rows[i].cells[5].innerHTML==""){
-            atos.push(empty);
+            aodtos.push(empty);
+            andtos.push(empty);
           }
           else {
-            var date=new Date(table.rows[i].cells[5].innerHTML);
-            date.setHours(8);
-            var isodate=date.toISOString();
-            adtos.push(isodate);
+            var input=document.getElementsByName('dto[]');
+            var date=input[i];
+            var value=date.value;
+            andtos.push(value);
+            input=document.getElementsByName('odto[]');
+            date=input[i];
+            value=date.value;
+            aodtos.push(value);
           }
 
           if (table.rows[i].cells[6].innerHTML==""){
-            acategories.push(empty);
+            aocategories.push(empty);
+            ancategories.push(empty);
           }
           else {
-            acategories.push(table.rows[i].cells[6].innerHTML);
+            var input=document.getElementsByName('category[]');
+            var cat=input[i];
+            var value=cat.value;
+            ancategories.push(value);
+            input=document.getElementsByName('ocategory[]');
+            date=input[i];
+            value=date.value;
+            aocategories.push(value);
           }
         }
         document.getElementById("locations").value=alocations;
         document.getElementById("addresses").value=aaddresses;
         document.getElementById("xs").value=axs;
         document.getElementById("ys").value=ays;
-        document.getElementById("dfroms").value=adfroms;
-        document.getElementById("dtos").value=adtos;
-        document.getElementById("categories").value=acategories;
-
+        document.getElementById("olddfroms").value=aodfroms;
+        document.getElementById("olddtos").value=aodtos;
+        document.getElementById("oldcategories").value=aocategories;
+        document.getElementById("newdfroms").value=andfroms;
+        document.getElementById("newdtos").value=andtos;
+        document.getElementById("newcategories").value=ancategories;
         document.forms['saveform'].submit();
       }
     </script>
 
   </body>
 </html>
-{% endblock %}
+{% endblock content %}

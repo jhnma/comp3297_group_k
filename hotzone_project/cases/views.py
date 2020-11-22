@@ -9,6 +9,7 @@ from django.core import serializers
 from cases import models
 from django.core.exceptions import ObjectDoesNotExist
 import json
+from datetime import datetime
 
 class AddVisit(View):
     def get(self, *args, **kwargs):
@@ -136,14 +137,16 @@ class ViewVisits(TemplateView):
 
 class CaseView(TemplateView):
     model=Visit
+    model=Case
     template_name='case.html'
 
     def get(self, request, **kwargs):
         currentUrl=self.request.get_full_path()
         pos=currentUrl.find('cases/')+6
         cid=currentUrl[pos:]
-        filtercase=Visit.objects.filter(case__case_id__exact=cid)
-        context={'filtercase': filtercase}
+        filtervisit=Visit.objects.filter(case__case_id__exact=cid)
+        filtercase=Case.objects.filter(case_id__exact=cid)
+        context={'filtervisit': filtervisit, 'filtercase': filtercase}
         return render(request, self.template_name, context)
 
 def save(request):
@@ -152,32 +155,48 @@ def save(request):
 
         model=Visit
         counter=0
-        retrange=request.GET['locations'].count(',')
-        retrange+=1
+        row_number=int(request.GET['row_number'])
         removelist=[]
-        for i in Visit.objects.filter(case__case_id__exact=request.GET['oldcaseid']):
-            for j in range(retrange):
+
+        for i in Visit.objects.filter(case__case_id__exact=request.GET['caseid']):
+            for j in range(row_number):
                 counter=0
                 if str(i.location.name)==request.GET['locations'].split(',')[j]:
                     if str(i.location.address)==request.GET['addresses'].split(',')[j]:
                         if str(i.location.x)==request.GET['xs'].split(',')[j]:
                             if str(i.location.y)==request.GET['ys'].split(',')[j]:
-                                if str(i.date_from)==request.GET['dfroms'].split(',')[j].split("T")[0]:
-                                    if str(i.date_to)==request.GET['dtos'].split(',')[j].split("T")[0]:
-                                        if str(i.get_category_display())==request.GET['categories'].split(',')[j].lower():
+                                if str(i.date_from)==request.GET['olddfroms'].split(',')[j]:
+                                    if str(i.date_to)==request.GET['olddtos'].split(',')[j]:
+                                        if str(i.category)==request.GET['oldcategories'].split(',')[j][0].lower():
                                             counter=1
                                             break
 
             if counter==0:
                 removelist.append(i)
+
         for i in removelist:
             i.delete()
 
-        model=Case
-        Case.objects.filter(case_id__exact=request.GET['oldcaseid']).update(case_id=request.GET['caseid'], date=request.GET['confirmeddate'], category=request.GET['localimported'][0].lower())
-        model=Patient
-        Patient.objects.filter(case__case_id__exact=request.GET['oldcaseid']).update(lastname=request.GET['patientname'].split(' ')[0], firstname=request.GET['patientname'].split(' ')[1]+" "+request.GET['patientname'].split(' ')[2], idn=request.GET['IDN'], dob=request.GET['DoB'])
-        model=Virus
-        Virus.objects.filter(case__case_id__exact=request.GET['oldcaseid']).update(name=request.GET['virusname'], common_name=request.GET['commonname'], period=request.GET['MIP'])
+        datefromarray=[]
+        datetoarray=[]
+        if row_number!=0:
+            for i in request.GET['newdfroms'].split(','):
+                newdate = datetime.strptime(i, '%Y-%m-%d')
+                ddate=newdate.date()
+                datefromarray.append(ddate)
+
+            for i in request.GET['newdtos'].split(','):
+                newdate = datetime.strptime(i, '%Y-%m-%d')
+                ddate=newdate.date()
+                datetoarray.append(ddate)
+
+            counter=0
+            for i in Visit.objects.filter(case__case_id__exact=caseid):
+                obj=i
+                obj.date_from=request.GET['newdfroms'].split(',')[counter]
+                obj.date_to=request.GET['newdtos'].split(',')[counter]
+                obj.category=request.GET['newcategories'].split(',')[counter][0].lower()
+                obj.save()
+                counter+=1
 
     return redirect('/cases/'+caseid)
