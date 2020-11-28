@@ -22,4 +22,5 @@ heroku local
 ```
 
 ## Deployment
-[https://safe-stream-64153.herokuapp.com](https://safe-stream-64153.herokuapp.com)
+[Release 1](https://safe-stream-64153.herokuapp.com)\
+[Release 2](https://shrouded-anchorage-75110.herokuapp.com)
