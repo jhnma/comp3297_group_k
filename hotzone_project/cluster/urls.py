@@ -1,6 +1,6 @@
 from django.urls import path
-from cases import views
+from cluster import views
 
 urlpatterns=[
-
+    path('', views.Cluster.as_view(), name='cluster'),
 ]
