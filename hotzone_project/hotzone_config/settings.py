@@ -38,6 +38,7 @@ ALLOWED_HOSTS = ['shrouded-anchorage-75110.herokuapp.com', 'localhost', '127.0.0
 INSTALLED_APPS = [
     'cases.apps.CasesConfig',
     'login.apps.LoginConfig',
+    'cluster.apps.ClusterConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
