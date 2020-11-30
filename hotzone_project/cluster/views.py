@@ -6,10 +6,15 @@ from django.http import HttpResponse
 class Cluster(View):
     template_name = "cluster.html"
 
-    def get(self, request, **kwargs):
-        c = request.GET.get('c', 0)
-        d = request.GET.get('d', 0)
-        t = request.GET.get('t', 0)
+    def get(self, request):
+        return render(request, self.template_name, {})
+
+    def post(self, request):
+        c = request.POST.get('c', 0)
+        d = request.POST.get('d', 0)
+        t = request.POST.get('t', 0)
+        #print(c, d, t)
+        # TODO: Clustering
         if (c and d and t):
             context = {'d':d, 'c':c, 't':t}
             return render(request, self.template_name, context)
