@@ -16,7 +16,8 @@ class Cluster(View):
         #print(c, d, t)
         # TODO: Clustering
         if (c and d and t):
-            context = {'d':d, 'c':c, 't':t}
+            cluster_result = {}
+            context = {'d':d, 'c':c, 't':t, 'cluster_result': cluster_result}
             return render(request, self.template_name, context)
         else:
             return render(request, self.template_name, {})
