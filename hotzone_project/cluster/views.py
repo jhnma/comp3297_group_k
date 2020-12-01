@@ -27,17 +27,22 @@ class Cluster(View):
             
             vector = []
 
+            caseLocation=[]
+            counter=0
+
             for visit in visits:
+                case_id=int(Case.objects.filter(id=visit['case']).values('case_id')[0]['case_id'])
+                caseLocation.append([case_id, list(Location.objects.values('name').filter(id=visit['location_id']))[0]['name']])
                 vector.append([
                     list(Location.objects.values('x').filter(id=visit['location_id']))[0]['x'],
                     list(Location.objects.values('y').filter(id=visit['location_id']))[0]['y'],
                     (visit['date_from'] - datetime.date(2020, 1, 1)).days,
-                    int(Case.objects.filter(id=visit['case']).values('case_id')[0]['case_id'])
+                    counter
                 ])
+                counter=counter+1
             
             vector = np.array(vector)
-            doClustering(vector, int(d), int(t), int(c))
-            cluster_result = {}
+            cluster_result = doClustering(vector, int(d), int(t), int(c), caseLocation)
             context = {'d':d, 'c':c, 't':t, 'cluster_result': cluster_result}
             return render(request, self.template_name, context)
 

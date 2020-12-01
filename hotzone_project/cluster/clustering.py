@@ -17,13 +17,15 @@ def custom_metric(q, p, space_eps, time_eps):
         return 2
 
 
-def doClustering(vector_4d, distance, time, minimum_cluster):
+def doClustering(vector_4d, distance, time, minimum_cluster, extraData):
 
     params = {"space_eps": distance, "time_eps": time}
     db = DBSCAN(eps=1, min_samples=minimum_cluster-1, metric=custom_metric, metric_params=params).fit_predict(vector_4d)
 
     unique_labels = set(db)
     total_clusters = len(unique_labels) if -1 not in unique_labels else len(unique_labels) -1
+
+    result=[]
 
     print("Total clusters:", total_clusters)
 
@@ -40,9 +42,12 @@ def doClustering(vector_4d, distance, time, minimum_cluster):
             print("Cluster", k, " size:", len(cluster_k))
 
             for pt in cluster_k:
-                print("(x:{}, y:{}, day:{}, caseNo:{})".format(pt[0], pt[1], pt[2], pt[3]))
+                #print("(x:{}, y:{}, day:{}, caseNo:{})".format(pt[0], pt[1], pt[2], pt[3]))
+                result.append({'x':pt[0], 'y':pt[1], 'day':pt[2], 'caseNo':extraData[int(pt[3])][0], 'location':extraData[int(pt[3])][1]})
 
-            print()
+            #print()
+
+    return result
 
 
 # 5. manipulate the cluster function to print give the exact output the tasksheet requires.
