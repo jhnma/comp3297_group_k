@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block title %} HotZone Clustering {% endblock title %}
+
+{% block styles %} <style></style> {% endblock styles %}
+
+{% block content %}
+<div class="container">
+  <form action='' method="post" >
+  {% csrf_token %}
+
+    <div class="form-group">
+      <label for='d'>Inter-location distance threshold 
+        <span class="badge badge-secondary">D</span>
+      </label>
+      <input type="number" name='d' value='{{ d }}' required>
+    </div>
+
+    <div class="form-group">
+      <label for='c'>Minimum cluster size
+        <span class="badge badge-secondary">C</span>
+      </label>
+      <input type="number" name='c' value='{{ c }}' required>
+    </div>
+
+    <div class="form-group">
+      <label for='t'>Proximity in time threshold
+        <span class="badge badge-secondary">T</span>
+      </label>
+      <input type="number" name='t' value='{{ t }}' required>
+    </div>
+
+    <button type="submit" class="btn btn-primary" value="submit">
+      Find clusters
+    </button>
+
+  </form>
+
+  {% if cluster_result %}
+    {% for cluster in cluster_result %}
+      <h5>Cluster {{forloop.counter}}</h5>
+      <table class="table table-hover">
+        <thead>
+          <tr class="bg-primary text-white">
+            <th scope="col">CaseNo</th>
+            <th scope="col">Location</th>
+            <th scope="col">X</th>
+            <th scope="col">Y</th>
+            <th scope="col">Date of Visit</th>
+          </tr>
+        </thead>
+        <tbody class="border-0">
+          {% for visit in cluster %}
+          <tr>
+            <td scope="row">{{ visit.caseNo }}</td>
+            <td scope="row">{{ visit.location }}</td>
+            <td scope="row">{{ visit.x }}</td>
+            <td scope="row">{{ visit.y }}</td>
+            <td scope="row">{{ visit.date }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <br>
+    {% endfor %}
+  {% else %}
+      <p>No cluster found!</p>
+  {% endif %}
+
+</div>
+{% endblock content %}

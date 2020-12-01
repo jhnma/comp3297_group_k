@@ -11,7 +11,6 @@
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
         <title> {% block title %} {% endblock title %} </title>
         {% block styles %} 
-            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
             <style>
                 .login-text {
                     text-align: center;
@@ -34,6 +33,9 @@
                 <div class="container">
                     <a class="navbar-brand" href="/"> HotZone </a>
                     <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="/clusters"> Clustered Data </a>
+                        </li>
                         <li class="nav-item">
                             <a class="nav-link active" href="/cases"> View / Edit Data <span class="sr-only">(current)</span></a>
                         </li>
