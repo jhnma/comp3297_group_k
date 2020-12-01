@@ -38,12 +38,15 @@ def doClustering(vector_4d, distance, time, minimum_cluster, extraData):
 
             labels_k = db == k
             cluster_k = vector_4d[labels_k]
+            row=[]
 
             print("Cluster", k, " size:", len(cluster_k))
 
             for pt in cluster_k:
                 #print("(x:{}, y:{}, day:{}, caseNo:{})".format(pt[0], pt[1], pt[2], pt[3]))
-                result.append({'x':pt[0], 'y':pt[1], 'day':pt[2], 'caseNo':extraData[int(pt[3])][0], 'location':extraData[int(pt[3])][1]})
+                row.append({'x':pt[0], 'y':pt[1], 'day':pt[2], 'caseNo':extraData[int(pt[3])][0], 'location':extraData[int(pt[3])][1]})
+
+            result.append(row)
 
             #print()
 
