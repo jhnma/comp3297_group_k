@@ -6,7 +6,7 @@
 
 {% block content %}
 <div class="container">
-  <form action='' method="post" >
+  <form action='' method="post" class="mb-3">
   {% csrf_token %}
 
     <div class="form-group">
@@ -61,7 +61,6 @@
           {% endfor %}
         </tbody>
       </table>
-      <br>
     {% endfor %}
   {% else %}
       <p>No cluster found!</p>
