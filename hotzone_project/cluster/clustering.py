@@ -44,7 +44,7 @@ def doClustering(vector_4d, distance, time, minimum_cluster, extraData):
 
             for pt in cluster_k:
                 #print("(x:{}, y:{}, day:{}, caseNo:{})".format(pt[0], pt[1], pt[2], pt[3]))
-                row.append({'x':pt[0], 'y':pt[1], 'day':pt[2], 'caseNo':extraData[int(pt[3])][0], 'location':extraData[int(pt[3])][1]})
+                row.append({'x':pt[0], 'y':pt[1], 'date':extraData[int(pt[3])][2], 'caseNo':extraData[int(pt[3])][0], 'location':extraData[int(pt[3])][1]})
 
             result.append(row)
 
