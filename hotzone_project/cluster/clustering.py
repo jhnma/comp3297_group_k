@@ -27,11 +27,11 @@ def doClustering(vector_4d, distance, time, minimum_cluster, extraData):
 
     result=[]
 
-    print("Total clusters:", total_clusters)
+    #print("Total clusters:", total_clusters)
 
     total_noise = list(db).count(-1)
 
-    print("Total un-clustered:", total_noise)
+    #print("Total un-clustered:", total_noise)
 
     for k in unique_labels:
         if k != -1:
@@ -40,15 +40,12 @@ def doClustering(vector_4d, distance, time, minimum_cluster, extraData):
             cluster_k = vector_4d[labels_k]
             row=[]
 
-            print("Cluster", k, " size:", len(cluster_k))
+            #print("Cluster", k, " size:", len(cluster_k))
 
             for pt in cluster_k:
-                #print("(x:{}, y:{}, day:{}, caseNo:{})".format(pt[0], pt[1], pt[2], pt[3]))
                 row.append({'x':pt[0], 'y':pt[1], 'date':extraData[int(pt[3])][2], 'caseNo':extraData[int(pt[3])][0], 'location':extraData[int(pt[3])][1]})
 
             result.append(row)
-
-            #print()
 
     return result
 
