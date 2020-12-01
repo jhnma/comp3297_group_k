@@ -2,11 +2,10 @@ from django.shortcuts import render
 from django.views.generic import View
 from django.http import HttpResponse, HttpResponseNotFound
 from django.core.exceptions import ObjectDoesNotExist
-from cases.models import Case, Location, Visit, Patient, Virus
-from sklearn.cluster import DBSCAN
+from cases.models import Case, Location, Visit
+from cluster.clustering import doClustering
 import datetime
 import numpy as np
-import math
 
 # Create your views here.
 class Cluster(View):
@@ -37,7 +36,7 @@ class Cluster(View):
                 ])
             
             vector = np.array(vector)
-            # TODO: doClustering(vector, int(d), int(t), int(c))
+            doClustering(vector, int(d), int(t), int(c))
             cluster_result = {}
             context = {'d':d, 'c':c, 't':t, 'cluster_result': cluster_result}
             return render(request, self.template_name, context)
