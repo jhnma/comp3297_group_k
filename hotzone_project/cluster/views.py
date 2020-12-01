@@ -1,7 +1,6 @@
 from django.shortcuts import render
 from django.views.generic import View
 from django.http import HttpResponse, HttpResponseNotFound
-from django.core.exceptions import ObjectDoesNotExist
 from cases.models import Case, Location, Visit
 from cluster.clustering import doClustering
 import datetime
@@ -20,11 +19,11 @@ class Cluster(View):
         t = request.POST.get('t', 0)
 
         if (c and d and t):
-            try:
-                visits = list(Visit.objects.values('case', 'location_id', 'date_from'))
-            except ObjectDoesNotExist:
-                return HttpResponseNotFound("Case doesn't exist.")
+            visits = list(Visit.objects.values('case', 'location_id', 'date_from'))
             
+            if (not visits):
+                return HttpResponseNotFound("Failed to get visits.")
+
             vector = []
 
             extraData=[]
